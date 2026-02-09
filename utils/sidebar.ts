@@ -7,104 +7,151 @@ export type NavItem = {
   roles?: string[];
 };
 
+export type DynamicRouteParams = {
+  userID?: string;
+  employerID?: string;
+  roleID?: string;
+  postingID?: string;
+  evidenceID?: string;
+  matchID?: string;
+  skillID?: string;
+  reviewID?: string;
+};
+
+export type Roles = 'admin' | 'user' | 'employer';
+
 export const ROLE_NAV_ITEMS: Record<string, NavItem[]> = {
   admin: [
     {
       id: 'dashboard',
       label: 'Dashboard',
-      href: '/admin',
+      href: '',
       icon: 'Home',
     },
     {
-      id: 'users',
-      label: 'Users',
-      href: '/admin/users',
-      icon: 'Users',
-    },
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      href: '/admin/analytics',
-      icon: 'BarChart3',
-    },
-    {
-      id: 'reports',
-      label: 'Reports',
-      href: '/admin/reports',
+      id: 'reviews',
+      label: 'Reviews',
+      href: '/reviews',
       icon: 'FileText',
     },
     {
-      id: 'settings',
-      label: 'Settings',
-      icon: 'Settings',
-      children: [
-        {
-          id: 'accessibility',
-          label: 'Accessibility',
-          href: '/admin/settings/accessibility',
-          icon: 'Eye',
-        },
-        {
-          id: 'activity',
-          label: 'Activity',
-          href: '/admin/settings/activity',
-          icon: 'Activity',
-        },
-        {
-          id: 'account-controls',
-          label: 'Account Controls',
-          href: '/admin/settings/controls',
-          icon: 'Lock',
-        },
-        {
-          id: 'customizations',
-          label: 'Customizations',
-          href: '/admin/settings/customizations',
-          icon: 'Palette',
-        },
-        {
-          id: 'data-ownership',
-          label: 'Data Ownership',
-          href: '/admin/settings/data',
-          icon: 'Database',
-        },
-        {
-          id: 'notification',
-          label: 'Notifications',
-          href: '/admin/settings/notification',
-          icon: 'Bell',
-        },
-        {
-          id: 'privacy',
-          label: 'Privacy',
-          href: '/admin/settings/privacy',
-          icon: 'Shield',
-        },
-        {
-          id: 'security',
-          label: 'Security',
-          href: '/admin/settings/security',
-          icon: 'Lock',
-        },
-      ],
+      id: 'evidence',
+      label: 'Evidence',
+      href: '/evidence',
+      icon: 'FolderCheck',
+    },
+    {
+      id: 'skills',
+      label: 'Skills',
+      href: '/skills',
+      icon: 'Sparkles',
+    },
+    {
+      id: 'capabilities',
+      label: 'Capabilities',
+      href: '/admin/capabilities',
+      icon: 'Network',
+    },
+    {
+      id: 'audit',
+      label: 'Audit',
+      href: '/audit',
+      icon: 'ShieldCheck',
     },
   ],
-  staff: [
+  user: [
     {
       id: 'dashboard',
       label: 'Dashboard',
-      href: '/staff',
+      href: '/[userID]/dashboard',
       icon: 'Home',
     },
     {
-      id: 'reports',
-      label: 'Reports',
-      href: '/staff/reports',
+      id: 'profile',
+      label: 'Profile',
+      href: '/[userID]/profile',
+      icon: 'User',
+    },
+    {
+      id: 'skills',
+      label: 'Skills',
+      href: '/[userID]/skills',
+      icon: 'Sparkles',
+    },
+    {
+      id: 'evidence',
+      label: 'Evidence',
+      href: '/[userID]/evidence',
+      icon: 'FolderCheck',
+    },
+    {
+      id: 'matches',
+      label: 'Matches',
+      href: '/[userID]/matches',
+      icon: 'Target',
+    },
+    {
+      id: 'recommendations',
+      label: 'Recommendations',
+      href: '/[userID]/recommendations',
+      icon: 'Lightbulb',
+    },
+  ],
+  employer: [
+    {
+      id: 'dashboard',
+      label: 'Dashboard',
+      href: '/[employerID]/dashboard',
+      icon: 'Home',
+    },
+    {
+      id: 'organization',
+      label: 'Organization',
+      href: '/[employerID]/org',
+      icon: 'Building2',
+    },
+    {
+      id: 'members',
+      label: 'Members',
+      href: '/[employerID]/org/members',
+      icon: 'Users',
+    },
+    {
+      id: 'roles',
+      label: 'Roles',
+      href: '/[employerID]/roles',
+      icon: 'Briefcase',
+    },
+    {
+      id: 'postings',
+      label: 'Postings',
+      href: '/[employerID]/postings',
       icon: 'FileText',
+    },
+    {
+      id: 'matches',
+      label: 'Matches',
+      href: '/[employerID]/matches',
+      icon: 'Target',
     },
   ],
 };
 
-export function getNavForRole(role: string): NavItem[] {
-  return ROLE_NAV_ITEMS[role];
+export function getNavForRole(role: Roles): NavItem[] {
+  return ROLE_NAV_ITEMS[role] ?? [];
+}
+
+export function resolveDynamicHref(
+  href: string,
+  params: DynamicRouteParams,
+): string {
+  return href
+    .replace('[userID]', params.userID ?? '')
+    .replace('[employerID]', params.employerID ?? '')
+    .replace('[roleID]', params.roleID ?? '')
+    .replace('[postingID]', params.postingID ?? '')
+    .replace('[evidenceID]', params.evidenceID ?? '')
+    .replace('[matchID]', params.matchID ?? '')
+    .replace('[skillID]', params.skillID ?? '')
+    .replace('[reviewID]', params.reviewID ?? '');
 }

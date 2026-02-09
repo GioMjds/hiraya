@@ -10,16 +10,13 @@ import { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
-import { PROFILE_DROPDOWN_ITEMS } from '@/features/admin/consts';
+import { PROFILE_DROPDOWN_ITEMS } from '@/features/authorized/admin/consts';
 import { useUser } from '@/features/identity/auth/hooks';
-import { useLogout } from '@/repositories/identity/auth';
 
-export function AdminProfile() {
+export function AuthorizedProfile() {
   const [mounted, isMounted] = useState<boolean>(false);
 
   const { data, isLoading } = useUser();
-
-  const logoutMutation = useLogout();
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => isMounted(true));
@@ -74,7 +71,6 @@ export function AdminProfile() {
           <Separator />
           <Button
             variant="ghost"
-            onClick={() => logoutMutation.mutate()}
             className="justify-start h-8 px-2 font-normal text-destructive hover:text-destructive hover:bg-destructive/10"
           >
             <LogOut className="mr-2 h-4 w-4" />

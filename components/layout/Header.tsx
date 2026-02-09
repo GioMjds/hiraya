@@ -9,7 +9,7 @@ import { Separator } from '@/components/ui/separator';
 import ThemeToggle from '@/components/shared/theme-switcher';
 import { useNavRailStore } from '@/stores';
 import LanguagePickerDropdown from '../shared/language-picker';
-import { AdminProfile } from './admin';
+import { AuthorizedProfile } from './authorized';
 
 interface HeaderProps {
   role: string;
@@ -71,7 +71,7 @@ export function Header({ role }: HeaderProps) {
 
         <ThemeToggle />
         <LanguagePickerDropdown />
-        <AdminProfile />
+        <AuthorizedProfile />
       </div>
     </div>
   );

@@ -146,7 +146,7 @@ export function NavRail({ items }: NavRailProps) {
             )}
           </div>
         ) : (
-          <Link href={localizedHref} className="flex items-center gap-3 w-full">
+          <Link href={{ pathname: localizedHref }} className="flex items-center gap-3 w-full">
             <div className="flex h-5 w-5 items-center justify-center shrink-0">
               {getIcon(item.icon, depth)}
             </div>

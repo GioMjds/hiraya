@@ -4,7 +4,8 @@ import type { Route } from 'next';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Header, NavRail } from '@/components/layout';
-import type { NavItem } from '@/utils/sidebar';
+import type { NavItem, DynamicRouteParams } from '@/utils/sidebar';
+import { resolveDynamicHref } from '@/utils/sidebar';
 import { useNavRailStore } from '@/stores';
 
 interface NavItemWithRoute extends Omit<NavItem, 'href' | 'children'> {
@@ -12,12 +13,16 @@ interface NavItemWithRoute extends Omit<NavItem, 'href' | 'children'> {
   children?: NavItemWithRoute[];
 }
 
-export default function AdminContent({
+export function AuthorizedContent({
   navItems,
   children,
+  role,
+  params,
 }: {
   navItems: NavItem[];
   children: React.ReactNode;
+  role: 'admin' | 'user' | 'employer'
+  params?: DynamicRouteParams;
 }) {
   const { isCollapsed } = useNavRailStore();
   const [mounted, setMounted] = useState<boolean>(false);
@@ -32,7 +37,7 @@ export default function AdminContent({
   const mapNavItems = (items: NavItem[]): NavItemWithRoute[] => {
     return items.map((item) => ({
       ...item,
-      href: (item.href || '') as Route,
+      href: (item.href ? resolveDynamicHref(item.href, params ?? {}) : '') as Route,
       children: item.children ? mapNavItems(item.children) : undefined,
     }));
   };
@@ -42,7 +47,7 @@ export default function AdminContent({
   return (
     <div className="h-screen flex flex-col">
       <header className="w-full shrink-0">
-        <Header role="admin" />
+        <Header role={role} />
       </header>
       <div className="flex flex-1 overflow-hidden">
         <aside className="border-r shrink-0">
