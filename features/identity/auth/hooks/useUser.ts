@@ -1,4 +1,4 @@
-import { auth } from '@/repositories';
+import { auth } from '@/lib/api';
 import useSWR from 'swr';
 
 export function useUser() {

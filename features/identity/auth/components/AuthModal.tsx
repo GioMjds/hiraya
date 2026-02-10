@@ -34,13 +34,13 @@ export function AuthModal({ title, children }: AuthModalProps) {
   };
 
   return (
-    <div 
+    <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={handleClose}
       role="dialog"
       aria-modal="true"
     >
-      <div 
+      <div
         className="bg-foreground rounded-lg shadow-xl w-full max-w-md relative animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >

@@ -4,12 +4,12 @@ export function proxy(req: NextRequest) {
   const token = req.cookies.get('access_token')?.value;
   const { pathname, searchParams } = req.nextUrl;
 
-  if (pathname === '/verify') {
-    const verificationToken = searchParams.get('email');
-    if (!verificationToken) {
-      return NextResponse.redirect(new URL('/login', req.url));
-    }
-  }
+  // if (pathname === '/verify') {
+  //   const verificationToken = searchParams.get('email');
+  //   if (!verificationToken) {
+  //     return NextResponse.redirect(new URL('/login', req.url));
+  //   }
+  // }
 
   const isAuthPage =
     pathname.startsWith('/login') ||

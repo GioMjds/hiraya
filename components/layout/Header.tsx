@@ -1,14 +1,13 @@
 'use client';
 
-import { Bell, Search, Menu, PanelLeftClose } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Bell, Search, Menu, PanelLeftClose } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ThemeToggle from '@/components/shared/theme-switcher';
 import { useNavRailStore } from '@/stores';
-import LanguagePickerDropdown from '../shared/language-picker';
 import { AuthorizedProfile } from './authorized';
 
 interface HeaderProps {
@@ -27,7 +26,7 @@ export function Header({ role }: HeaderProps) {
   const active = mounted ? isCollapsed : false;
 
   return (
-    <div className="h-16 border-b px-4 flex items-center justify-between bg-white dark:bg-zinc-900/50">
+    <div className="h-16 border-b px-4 flex items-center justify-between bg-background">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -70,7 +69,6 @@ export function Header({ role }: HeaderProps) {
         </Button>
 
         <ThemeToggle />
-        <LanguagePickerDropdown />
         <AuthorizedProfile />
       </div>
     </div>
