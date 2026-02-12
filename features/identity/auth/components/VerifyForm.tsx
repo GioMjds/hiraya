@@ -45,8 +45,10 @@ export function VerifyForm() {
   const onVerify = async () => {
     try {
       setVerifyError('');
-      await auth.verifyEmail({ email, otp });
-      router.push('/');
+      const result = await auth.verifyEmail({ email, otp });
+
+      const userId = result.user?.id ?? (await auth.getMe()).id;
+      router.push(`/onboarding/${userId}`);
     } catch (error) {
       if (error instanceof ApiError) {
         setVerifyError(error.message);

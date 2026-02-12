@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Open_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/lib/theme-context';
+import Providers from './providers';
 
 const openSans = Open_Sans({
   variable: '--font-open-sans',
@@ -53,7 +54,7 @@ export default function RootLayout({
           enableSystem={true}
           disableTransitionOnChange={true}
         >
-          {children}
+          <Providers>{children}</Providers>
         </ThemeProvider>
       </body>
     </html>

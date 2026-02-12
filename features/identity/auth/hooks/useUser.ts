@@ -1,8 +1,14 @@
+import { useQuery } from '@tanstack/react-query';
 import { auth } from '@/lib/api';
-import useSWR from 'swr';
 
 export function useUser() {
-  const { data, isLoading } = useSWR('current-user', () => auth.getMe());
+  const { data, isLoading } = useQuery({
+    queryKey: ['current-user'],
+    queryFn: () => auth.getMe(),
+    enabled: false,
+    refetchOnMount: true,
+    refetchOnWindowFocus: false,
+  });
 
   return { data: data, isLoading: isLoading };
 }

@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { auth, LoginData } from '@/lib/api';
 import { ApiError } from '@/configs';
+import { GoogleOAuthButton } from '@/components/shared/google-login';
 
 interface OptimisticState {
   message: string;
@@ -244,6 +245,20 @@ export function LoginForm() {
             'Sign In'
           )}
         </Button>
+
+        <div className="pt-2">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-background px-2 text-muted-foreground">
+                Or continue with
+              </span>
+            </div>
+          </div>
+          <GoogleOAuthButton />
+        </div>
 
         <div className="pt-4 text-left text-sm text-muted-foreground">
           Don&apos;t have an account?{' '}

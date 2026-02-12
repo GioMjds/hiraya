@@ -13,6 +13,8 @@ export interface LoginResponse {
     phone: string | null;
     isActive: boolean;
     isEmailVerified: boolean;
+    isSurveyDone: boolean;
+    role: string;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -36,6 +38,8 @@ export interface RegisterResponse {
     phone: string | null;
     isActive: boolean;
     isEmailVerified: boolean;
+    isSurveyDone: boolean;
+    role: string;
     createdAt: Date;
     updatedAt: Date;
   };
@@ -54,6 +58,8 @@ export interface VerifyEmailResponse {
     lastName: string;
     email: string;
     isEmailVerified: boolean;
+    isSurveyDone: boolean;
+    role: string;
   };
   access_token?: string; // Backend returns this on verification
 }
@@ -113,8 +119,50 @@ export interface CurrentUserResponse {
   phone: string | null;
   isActive: boolean;
   isEmailVerified: boolean;
+  isSurveyDone: boolean;
   role: string;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
+}
+
+export type OnboardingPersona =
+  | 'STUDENT'
+  | 'JOB_SEEKER'
+  | 'PROFESSIONAL'
+  | 'CAREER_SHIFTER'
+  | 'EMPLOYER';
+
+export type OnboardingGoal =
+  | 'GET_MATCHES'
+  | 'FIND_SKILL_GAPS'
+  | 'VALIDATE_SKILLS'
+  | 'EXPLORE_PATHS'
+  | 'CREATE_ROLES'
+  | 'VIEW_CANDIDATE_MATCHES'
+  | 'MANAGE_ORGANIZATION';
+
+export type EvidenceType =
+  | 'PROJECT'
+  | 'REPOSITORY'
+  | 'CERTIFICATE'
+  | 'ASSESSMENT'
+  | 'EXPERIENCE';
+
+export type YearsExperience = '0' | '1-2' | '3-5' | '6-10' | '10+';
+
+export interface OnboardingSurveyData {
+  persona: OnboardingPersona;
+  goal: OnboardingGoal;
+  yearsExperience: YearsExperience;
+  location?: string;
+  currentFocus?: string;
+  targetOutcome: string;
+  evidenceTypes?: EvidenceType[];
+  hasOrganization?: boolean;
+  organizationName?: string;
+}
+
+export interface OnboardingSurveyResponse {
+  message: string;
 }

@@ -17,7 +17,10 @@ import {
   ForgotPasswordResetData,
   ForgotPasswordResetResponse,
   CurrentUserResponse,
+  OnboardingSurveyData,
+  OnboardingSurveyResponse,
 } from './types';
+import { GoogleOAuthData, GoogleOAuthResponse } from '@/types';
 
 const http = createEndpoint('/auth');
 
@@ -90,5 +93,19 @@ export const auth = {
     await http.get<CurrentUserResponse>('/me', {
       auth: true,
       next: { revalidate: 60, tags: ['current-user'] },
+    }),
+
+  googleOAuth: async (data: GoogleOAuthData): Promise<GoogleOAuthResponse> =>
+    await http.post<GoogleOAuthResponse>('/google', data, {
+      auth: true,
+      ...cacheStrategies.dynamic,
+    }),
+  
+  answerOnboardingSurvey: async (
+    data: OnboardingSurveyData,
+  ): Promise<OnboardingSurveyResponse> =>
+    await http.post<OnboardingSurveyResponse>('/survey', data, {
+      auth: true,
+      ...cacheStrategies.dynamic,
     }),
 };
