@@ -1,41 +1,13 @@
 'use client';
 
 import type { Route } from 'next';
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
+import { GoogleLogin, type CredentialResponse } from '@react-oauth/google';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/api/identity/auth';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type Status = 'idle' | 'error';
-
-declare global {
-  interface Window {
-    google?: {
-      accounts: {
-        id: {
-          initialize: (config: {
-            client_id: string;
-            callback: (response: { credential: string }) => void;
-            auto_select?: boolean;
-          }) => void;
-          renderButton: (
-            element: HTMLElement,
-            config: {
-              theme?: string;
-              size?: string;
-              width?: number;
-              type?: string;
-              shape?: string;
-              text?: string;
-              logo_alignment?: string;
-            },
-          ) => void;
-          prompt: () => void;
-        };
-      };
-    };
-  }
-}
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
@@ -43,11 +15,9 @@ export function GoogleOAuthButton() {
   const router = useRouter();
   const [status, setStatus] = useState<Status>('idle');
   const [errorMessage, setErrorMessage] = useState<string>('');
-  const [googleLoaded, setGoogleLoaded] = useState(false);
-  const googleButtonRef = useRef<HTMLDivElement>(null);
 
   const handleGoogleCallback = useCallback(
-    async (response: { credential: string }) => {
+    async (response: CredentialResponse) => {
       setStatus('idle');
       setErrorMessage('');
 
@@ -78,11 +48,11 @@ export function GoogleOAuthButton() {
         }
 
         if (user.role === 'EMPLOYER') {
-          router.push(`/employer/${user.id}` as Route);
+          router.push(`/employer/${user.id}/dashboard` as Route);
           return;
         }
 
-        router.push(`/user/${user.id}` as Route);
+        router.push(`/user/${user.id}/dashboard` as Route);
       } catch (e: unknown) {
         const message =
           e instanceof Error ? e.message : 'Google sign-in failed.';
@@ -93,56 +63,40 @@ export function GoogleOAuthButton() {
     [router],
   );
 
-  useEffect(() => {
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    script.onload = () => setGoogleLoaded(true);
-    document.body.appendChild(script);
-
-    return () => {
-      const existingScript = document.querySelector(
-        'script[src="https://accounts.google.com/gsi/client"]',
-      );
-      if (existingScript) {
-        document.body.removeChild(existingScript);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!googleLoaded || !window.google || !googleButtonRef.current) {
-      return;
-    }
-
-    googleButtonRef.current.innerHTML = '';
-
-    window.google.accounts.id.initialize({
-      client_id: GOOGLE_CLIENT_ID!,
-      callback: handleGoogleCallback,
-    });
-
-    window.google.accounts.id.renderButton(googleButtonRef.current, {
-      theme: 'outline',
-      size: 'large',
-      width: 400,
-      type: 'standard',
-      shape: 'rectangular',
-      text: 'signin_with',
-      logo_alignment: 'left',
-    });
-  }, [googleLoaded, handleGoogleCallback]);
-
   return (
     <div className="space-y-3">
+      {!GOOGLE_CLIENT_ID && (
+        <Alert variant="destructive">
+          <AlertDescription>
+            Google sign-in is not configured.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {status === 'error' && (
         <Alert variant="destructive">
           <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       )}
 
-      <div ref={googleButtonRef} className="flex justify-center" />
+      {GOOGLE_CLIENT_ID && (
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleCallback}
+            onError={() => {
+              setStatus('error');
+              setErrorMessage('Google sign-in failed.');
+            }}
+            theme="outline"
+            size="large"
+            width="400"
+            type="standard"
+            shape="rectangular"
+            text="signin_with"
+            logo_alignment="left"
+          />
+        </div>
+      )}
     </div>
   );
 }

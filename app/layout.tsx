@@ -1,11 +1,11 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
-import { Open_Sans } from 'next/font/google';
+import { Plus_Jakarta_Sans } from 'next/font/google';
 import { ThemeProvider } from '@/lib/theme-context';
 import Providers from './providers';
 
-const openSans = Open_Sans({
-  variable: '--font-open-sans',
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: '--font-plus-jakarta-sans',
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700', '800'],
 });
@@ -46,7 +46,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${openSans.className} ${openSans.style} antialiased font-sans`}
+        className={`${plusJakartaSans.className} ${plusJakartaSans.style} antialiased font-sans`}
       >
         <ThemeProvider
           attribute="class"

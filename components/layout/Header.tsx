@@ -43,7 +43,7 @@ export function Header({ role }: HeaderProps) {
         </Button>
 
         <div className="font-bold text-xl tracking-tight hidden md:block">
-          Praktisan
+          Hiraya
         </div>
         <Separator orientation="vertical" className="h-6 hidden md:block" />
         <Badge variant="outline" className="capitalize">

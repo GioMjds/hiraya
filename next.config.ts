@@ -22,6 +22,11 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
         port: '3000'
+      },
+      {
+        protocol: 'https',
+        hostname: 'googleusercontent.com',
+        port: '',
       }
     ]
   },

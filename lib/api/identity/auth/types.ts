@@ -121,6 +121,7 @@ export interface CurrentUserResponse {
   isEmailVerified: boolean;
   isSurveyDone: boolean;
   role: string;
+  profileImageUrl: string | null;
   archivedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;

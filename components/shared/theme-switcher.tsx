@@ -3,6 +3,7 @@
 import { useTheme } from 'next-themes';
 import { Sun, Moon } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Kbd } from '../ui/kbd';
 
 export default function ThemeToggle() {
   const { theme, resolvedTheme, setTheme } = useTheme();
@@ -55,9 +56,10 @@ export default function ThemeToggle() {
     <button
       aria-label="Toggle theme"
       onClick={() => setTheme(active ? 'light' : 'dark')}
-      className="p-2 cursor-pointer hover:bg-accent rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      className="flex items-center gap-1 p-2 cursor-pointer bg-background hover:bg-accent rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
     >
       {active ? <Moon size={20} /> : <Sun size={20} />}
+      <Kbd className='transition-colors'>D</Kbd>
     </button>
   );
 }

@@ -45,11 +45,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
-  if (!clientId) return children;
-
   return (
-    <GoogleOAuthProvider clientId={clientId}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </GoogleOAuthProvider>
+    <QueryClientProvider client={queryClient}>
+      {clientId ? (
+        <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>
+      ) : (
+        children
+      )}
+    </QueryClientProvider>
   );
 }
