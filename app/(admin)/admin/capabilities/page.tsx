@@ -6,12 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Network, Plus, Search } from 'lucide-react';
 
-const SAMPLE_CAPABILITIES = [
-  { name: 'Frontend Development', slug: 'frontend-development', edges: 12 },
-  { name: 'Backend Development', slug: 'backend-development', edges: 18 },
-  { name: 'Database Design', slug: 'database-design', edges: 9 },
-  { name: 'System Architecture', slug: 'system-architecture', edges: 7 },
-] as const;
+const capabilities: Array<{ name: string; slug: string; edges: number }> = [];
 
 export default function Page() {
   return (
@@ -50,24 +45,30 @@ export default function Page() {
           <Separator />
 
           <div className="grid gap-3 sm:grid-cols-2">
-            {SAMPLE_CAPABILITIES.map((capability) => (
-              <Card key={capability.slug} className="py-4">
-                <CardContent className="space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="font-medium">{capability.name}</div>
-                      <div className="text-xs text-muted-foreground">Slug: {capability.slug}</div>
+            {capabilities.length === 0 ? (
+              <div className="rounded-lg border p-6 text-sm text-muted-foreground sm:col-span-2">
+                No capabilities available yet.
+              </div>
+            ) : (
+              capabilities.map((capability) => (
+                <Card key={capability.slug} className="py-4">
+                  <CardContent className="space-y-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <div className="font-medium">{capability.name}</div>
+                        <div className="text-xs text-muted-foreground">Slug: {capability.slug}</div>
+                      </div>
+                      <Badge variant="secondary" className="shrink-0">
+                        {capability.edges} edges
+                      </Badge>
                     </div>
-                    <Badge variant="secondary" className="shrink-0">
-                      {capability.edges} edges
-                    </Badge>
-                  </div>
-                  <Button variant="outline" size="sm" className="w-full">
-                    Manage edges
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+                    <Button variant="outline" size="sm" className="w-full">
+                      Manage edges
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

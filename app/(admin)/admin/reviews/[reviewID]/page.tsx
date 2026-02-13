@@ -13,12 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowLeft, Check, X } from 'lucide-react';
 
-const SAMPLE_ITEMS = [
-  { label: 'Requested by', value: '—' },
-  { label: 'Requested at', value: '—' },
-  { label: 'Review type', value: 'Evidence verification' },
-  { label: 'Current status', value: 'PENDING' },
-] as const;
+const reviewItems: Array<{ label: string; value: string }> = [];
 
 export default async function Page({ params }: PageProps<'/admin/reviews/[reviewID]'>) {
   const { reviewID } = await params;
@@ -114,12 +109,16 @@ export default async function Page({ params }: PageProps<'/admin/reviews/[review
             <CardTitle className="text-base">Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {SAMPLE_ITEMS.map((row) => (
-              <div key={row.label} className="flex items-center justify-between gap-3">
-                <div className="text-sm text-muted-foreground">{row.label}</div>
-                <div className="text-sm font-medium text-right">{row.value}</div>
-              </div>
-            ))}
+            {reviewItems.length === 0 ? (
+              <div className="text-sm text-muted-foreground">No review metadata available yet.</div>
+            ) : (
+              reviewItems.map((row) => (
+                <div key={row.label} className="flex items-center justify-between gap-3">
+                  <div className="text-sm text-muted-foreground">{row.label}</div>
+                  <div className="text-sm font-medium text-right">{row.value}</div>
+                </div>
+              ))
+            )}
             <Separator />
             <div className="text-xs text-muted-foreground">Review ID: {reviewID}</div>
           </CardContent>

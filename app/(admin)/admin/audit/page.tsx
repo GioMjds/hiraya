@@ -6,12 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Search, ShieldCheck } from 'lucide-react';
 
-const SAMPLE_EVENTS = [
-  { action: 'EVIDENCE_SUBMITTED', actor: 'user', time: '—', outcome: 'OK' },
-  { action: 'REVIEW_APPROVED', actor: 'admin', time: '—', outcome: 'OK' },
-  { action: 'SKILL_UPDATED', actor: 'admin', time: '—', outcome: 'OK' },
-  { action: 'LOGIN', actor: 'user', time: '—', outcome: 'OK' },
-] as const;
+const events: Array<{ action: string; actor: string; time: string; outcome: string }> = [];
 
 export default function Page() {
   return (
@@ -44,28 +39,34 @@ export default function Page() {
           <Separator />
 
           <div className="grid gap-3">
-            {SAMPLE_EVENTS.map((event, index) => (
-              <div
-                key={`${event.action}-${index}`}
-                className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="font-medium">{event.action}</div>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {event.actor}
-                    </Badge>
-                    <Badge variant="secondary" className="text-xs">
-                      {event.outcome}
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground">Timestamp: {event.time}</div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Details
-                </Button>
+            {events.length === 0 ? (
+              <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                No audit events available yet.
               </div>
-            ))}
+            ) : (
+              events.map((event, index) => (
+                <div
+                  key={`${event.action}-${index}`}
+                  className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="font-medium">{event.action}</div>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {event.actor}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {event.outcome}
+                      </Badge>
+                    </div>
+                    <div className="text-xs text-muted-foreground">Timestamp: {event.time}</div>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    Details
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

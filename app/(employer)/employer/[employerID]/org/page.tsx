@@ -16,7 +16,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Organization</h1>
           <p className="text-sm text-muted-foreground">
-            Manage your org profile and member access (mock).
+            Manage your org profile and member access.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -58,7 +58,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
                 <div>
                   <div className="font-medium">Public profile preview</div>
                   <div className="text-sm text-muted-foreground">
-                    Mock space for how the organization appears to candidates.
+                    Space for how the organization appears to candidates.
                   </div>
                 </div>
                 <Button variant="outline" size="sm">

@@ -15,7 +15,7 @@ export default async function Page({
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Posting detail</h1>
           <p className="text-sm text-muted-foreground">
-            Mock view of a posting, status, and candidate pipeline.
+            View posting status and candidate pipeline.
           </p>
         </div>
         <Button variant="outline" asChild>
@@ -33,29 +33,17 @@ export default async function Page({
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div>
                   <div className="text-sm text-muted-foreground">Title</div>
-                  <div className="text-lg font-semibold">Senior Full-Stack Engineer</div>
+                  <div className="text-lg font-semibold">Posting data unavailable</div>
                 </div>
-                <Badge variant="secondary">OPEN</Badge>
+                <Badge variant="outline">N/A</Badge>
               </div>
               <Separator className="my-4" />
               <div className="text-sm text-muted-foreground">
                 This area can show location, salary range, and full posting description.
               </div>
             </div>
-            <div className="rounded-lg border p-4">
-              <div className="text-sm font-medium">Candidate pipeline (mock)</div>
-              <div className="mt-3 grid gap-2">
-                {[
-                  { label: 'New', value: '—' },
-                  { label: 'Shortlisted', value: '—' },
-                  { label: 'Rejected', value: '—' },
-                ].map((row) => (
-                  <div key={row.label} className="flex items-center justify-between">
-                    <div className="text-sm text-muted-foreground">{row.label}</div>
-                    <div className="text-sm font-medium">{row.value}</div>
-                  </div>
-                ))}
-              </div>
+            <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+              Candidate pipeline is not available yet.
             </div>
           </CardContent>
         </Card>

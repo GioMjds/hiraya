@@ -15,7 +15,7 @@ export default async function Page({
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Role detail</h1>
           <p className="text-sm text-muted-foreground">
-            Mock view of requirements and how matches will be computed.
+              View role requirements and how matches are computed.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -44,7 +44,7 @@ export default async function Page({
               </div>
               <Separator className="my-4" />
               <div className="text-sm text-muted-foreground">
-                This section can contain description, responsibilities, and role context.
+                Role details will appear once connected to API data.
               </div>
             </div>
 
@@ -53,11 +53,7 @@ export default async function Page({
                 <CardContent className="space-y-2">
                   <div className="text-sm font-medium">Critical skills</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {['TypeScript', 'React', 'API Design'].map((name) => (
-                      <Badge key={name} variant="secondary" className="text-xs font-normal">
-                        {name}
-                      </Badge>
-                    ))}
+                      <div className="text-xs text-muted-foreground">No critical skills yet.</div>
                   </div>
                 </CardContent>
               </Card>
@@ -65,11 +61,7 @@ export default async function Page({
                 <CardContent className="space-y-2">
                   <div className="text-sm font-medium">Key capabilities</div>
                   <div className="flex flex-wrap gap-1.5">
-                    {['Frontend', 'Backend', 'Data Modeling'].map((name) => (
-                      <Badge key={name} variant="outline" className="text-xs font-normal">
-                        {name}
-                      </Badge>
-                    ))}
+                      <div className="text-xs text-muted-foreground">No key capabilities yet.</div>
                   </div>
                 </CardContent>
               </Card>

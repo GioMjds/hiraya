@@ -55,7 +55,7 @@ export function AuthorizedContent({
         </aside>
         <main
           className={cn(
-            'flex-1 p-4 transition-all duration-300 overflow-y-auto',
+            'flex-1 p-8 transition-all duration-300 overflow-y-auto',
             active ? 'ml-0' : 'ml-0',
           )}
         >

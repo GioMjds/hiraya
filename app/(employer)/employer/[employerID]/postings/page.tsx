@@ -6,11 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, FileText, Plus, Search } from 'lucide-react';
 
-const SAMPLE_POSTINGS = [
-  { id: 'mock-posting-1', title: 'Senior Full-Stack Engineer', status: 'OPEN' },
-  { id: 'mock-posting-2', title: 'Frontend Engineer', status: 'DRAFT' },
-  { id: 'mock-posting-3', title: 'Backend Engineer', status: 'CLOSED' },
-] as const;
+const postings: Array<{ id: string; title: string; status: string }> = [];
 
 export default async function Page({ params }: PageProps<'/employer/[employerID]/postings'>) {
   const { employerID } = await params;
@@ -21,7 +17,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Postings</h1>
           <p className="text-sm text-muted-foreground">
-            Create and manage job postings tied to roles (mock).
+            Create and manage job postings tied to roles.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -51,31 +47,37 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
           </div>
           <Separator />
           <div className="grid gap-3">
-            {SAMPLE_POSTINGS.map((posting) => (
-              <div
-                key={posting.id}
-                className="rounded-lg border p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div>
-                  <div className="font-medium">{posting.title}</div>
-                  <div className="text-xs text-muted-foreground">Posting ID: {posting.id}</div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant={posting.status === 'OPEN' ? 'secondary' : 'outline'}
-                    className="text-xs"
-                  >
-                    {posting.status}
-                  </Badge>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/employer/${employerID}/postings/${posting.id}`}>
-                      Open
-                      <ArrowRight className="ml-1 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
+            {postings.length === 0 ? (
+              <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                No postings available yet.
               </div>
-            ))}
+            ) : (
+              postings.map((posting) => (
+                <div
+                  key={posting.id}
+                  className="rounded-lg border p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div>
+                    <div className="font-medium">{posting.title}</div>
+                    <div className="text-xs text-muted-foreground">Posting ID: {posting.id}</div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge
+                      variant={posting.status === 'OPEN' ? 'secondary' : 'outline'}
+                      className="text-xs"
+                    >
+                      {posting.status}
+                    </Badge>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/employer/${employerID}/postings/${posting.id}`}>
+                        Open
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

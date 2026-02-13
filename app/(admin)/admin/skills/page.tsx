@@ -6,12 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Search, Sparkles } from 'lucide-react';
 
-const SAMPLE_SKILLS = [
-  { name: 'TypeScript', slug: 'typescript', state: 'ACTIVE' },
-  { name: 'Next.js', slug: 'nextjs', state: 'ACTIVE' },
-  { name: 'NestJS', slug: 'nestjs', state: 'ACTIVE' },
-  { name: 'Graph Modeling', slug: 'graph-modeling', state: 'DRAFT' },
-] as const;
+const skills: Array<{ name: string; slug: string; state: string }> = [];
 
 export default function Page() {
   return (
@@ -49,25 +44,31 @@ export default function Page() {
             </div>
             <Separator />
             <div className="grid gap-3">
-              {SAMPLE_SKILLS.map((skill) => (
-                <div
-                  key={skill.slug}
-                  className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <div className="font-medium">{skill.name}</div>
-                    <div className="text-xs text-muted-foreground">Slug: {skill.slug}</div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={skill.state === 'ACTIVE' ? 'secondary' : 'outline'}>
-                      {skill.state}
-                    </Badge>
-                    <Button variant="outline" size="sm">
-                      Edit
-                    </Button>
-                  </div>
+              {skills.length === 0 ? (
+                <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                  No skills available yet.
                 </div>
-              ))}
+              ) : (
+                skills.map((skill) => (
+                  <div
+                    key={skill.slug}
+                    className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <div className="font-medium">{skill.name}</div>
+                      <div className="text-xs text-muted-foreground">Slug: {skill.slug}</div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant={skill.state === 'ACTIVE' ? 'secondary' : 'outline'}>
+                        {skill.state}
+                      </Badge>
+                      <Button variant="outline" size="sm">
+                        Edit
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

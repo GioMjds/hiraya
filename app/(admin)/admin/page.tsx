@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import type { Route } from 'next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,8 @@ const OVERVIEW = [
     href: '/admin/audit',
   },
 ] as const;
+
+const workQueue: Array<{ title: string; meta: string; href: Route }> = [];
 
 export default function Page() {
   return (
@@ -92,36 +95,26 @@ export default function Page() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex flex-col gap-3">
-              {[
-                {
-                  title: 'Evidence verification requested',
-                  meta: 'New submission • Pending',
-                  href: '/admin/evidence/mock-evidence-1',
-                },
-                {
-                  title: 'Review decision needed',
-                  meta: 'Admin review • Pending',
-                  href: '/admin/reviews/mock-review-1',
-                },
-                {
-                  title: 'Graph edge requires validation',
-                  meta: 'Skill ↔ capability mapping',
-                  href: '/admin/capabilities',
-                },
-              ].map((row) => (
-                <div
-                  key={row.title}
-                  className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <div className="font-medium">{row.title}</div>
-                    <div className="text-sm text-muted-foreground">{row.meta}</div>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={row.href}>View</Link>
-                  </Button>
+              {workQueue.length === 0 ? (
+                <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                  No pending work items yet.
                 </div>
-              ))}
+              ) : (
+                workQueue.map((row) => (
+                  <div
+                    key={row.title}
+                    className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <div className="font-medium">{row.title}</div>
+                      <div className="text-sm text-muted-foreground">{row.meta}</div>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={row.href}>View</Link>
+                    </Button>
+                  </div>
+                ))
+              )}
             </div>
           </CardContent>
         </Card>

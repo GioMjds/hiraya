@@ -6,26 +6,12 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, Filter, Search } from 'lucide-react';
 
-const SAMPLE_REVIEWS = [
-  {
-    id: 'mock-review-1',
-    title: 'Evidence verification',
-    status: 'PENDING',
-    hint: 'User requests verification for a submitted artifact.',
-  },
-  {
-    id: 'mock-review-2',
-    title: 'Skill claim dispute',
-    status: 'PENDING',
-    hint: 'Conflicting evidence requires manual decision.',
-  },
-  {
-    id: 'mock-review-3',
-    title: 'Graph edge submission',
-    status: 'APPROVED',
-    hint: 'New skill ↔ capability edge request.',
-  },
-] as const;
+const reviews: Array<{
+  id: string;
+  title: string;
+  status: string;
+  hint: string;
+}> = [];
 
 function getStatusVariant(status: string): 'secondary' | 'outline' {
   if (status === 'PENDING') return 'secondary';
@@ -73,27 +59,33 @@ export default function Page() {
           <Separator />
 
           <div className="grid gap-3">
-            {SAMPLE_REVIEWS.map((item) => (
-              <div
-                key={item.id}
-                className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="font-medium">{item.title}</div>
-                    <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
-                  </div>
-                  <div className="text-sm text-muted-foreground">{item.hint}</div>
-                  <div className="text-xs text-muted-foreground">Review ID: {item.id}</div>
-                </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href={`/admin/reviews/${item.id}`}>
-                    Open
-                    <ArrowRight className="ml-1 h-4 w-4" />
-                  </Link>
-                </Button>
+            {reviews.length === 0 ? (
+              <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                No review items in queue yet.
               </div>
-            ))}
+            ) : (
+              reviews.map((item) => (
+                <div
+                  key={item.id}
+                  className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="font-medium">{item.title}</div>
+                      <Badge variant={getStatusVariant(item.status)}>{item.status}</Badge>
+                    </div>
+                    <div className="text-sm text-muted-foreground">{item.hint}</div>
+                    <div className="text-xs text-muted-foreground">Review ID: {item.id}</div>
+                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/admin/reviews/${item.id}`}>
+                      Open
+                      <ArrowRight className="ml-1 h-4 w-4" />
+                    </Link>
+                  </Button>
+                </div>
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

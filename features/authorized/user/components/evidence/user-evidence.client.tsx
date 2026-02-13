@@ -1,84 +1,81 @@
+'use client';
+
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
-import { ArrowRight, FolderCheck, Search } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
+import { useGetUserEvidence } from '@/features/authorized/user/hooks';
 
-const evidenceQueue: Array<{
-  id: string;
-  title: string;
-  type: string;
-  status: string;
-}> = [];
+interface UserEvidenceClientProps {
+  userId: string;
+}
 
-export default function Page() {
+export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
+  const { data: userEvidence, isLoading } = useGetUserEvidence();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Evidence</h1>
           <p className="text-sm text-muted-foreground">
-            Browse submitted evidence and verify it against skill claims.
+            Artifacts linked to your skill claims.
           </p>
         </div>
-        <Button variant="outline" asChild>
-          <Link href="/admin">Back to dashboard</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" asChild>
+            <Link href={`/user/${userId}/dashboard`}>Back</Link>
+          </Button>
+        </div>
       </div>
 
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <div className="space-y-1">
-              <CardTitle className="text-base">Queue</CardTitle>
-              <div className="text-sm text-muted-foreground">
-                New submissions appear here for review.
-              </div>
-            </div>
-            <FolderCheck className="h-5 w-5 text-muted-foreground" />
-          </div>
+          <CardTitle className="text-base">Your submissions</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="relative w-full sm:max-w-md">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="pl-9" placeholder="Search evidence..." />
+            <Input className="pl-9" placeholder="Search evidence..." disabled />
           </div>
 
           <Separator />
 
           <div className="grid gap-3">
-            {evidenceQueue.length === 0 ? (
+            {isLoading ? (
               <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-                No evidence in queue yet.
+                Loading evidence...
               </div>
-            ) : (
-              evidenceQueue.map((item) => (
+            ) : userEvidence && userEvidence.length > 0 ? (
+              userEvidence.map((item) => (
                 <div
                   key={item.id}
                   className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  <div className="space-y-1">
+                  <div>
                     <div className="flex items-center gap-2 flex-wrap">
                       <div className="font-medium">{item.title}</div>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="outline" className="text-xs uppercase">
                         {item.type}
-                      </Badge>
-                      <Badge variant={item.status === 'PENDING' ? 'secondary' : 'outline'}>
-                        {item.status}
                       </Badge>
                     </div>
                     <div className="text-xs text-muted-foreground">Evidence ID: {item.id}</div>
                   </div>
                   <Button variant="outline" size="sm" asChild>
-                    <Link href={`/admin/evidence/${item.id}`}>
+                    <Link href={`/user/${userId}/evidence/${item.id}`}>
                       Open
                       <ArrowRight className="ml-1 h-4 w-4" />
                     </Link>
                   </Button>
                 </div>
               ))
+            ) : (
+              <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+                No evidence available yet.
+              </div>
             )}
           </div>
         </CardContent>
