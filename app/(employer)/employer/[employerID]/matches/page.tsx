@@ -1,13 +1,18 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from '@tanstack/react-query';
-import {
-  EmployerMatchesClient,
-} from '@/features/authorized/employer/components';
+import { EmployerMatchesClient } from '@/features/authorized/employer/components';
 import { employerMatchesQueryKeys } from '@/features/authorized/employer/hooks';
 import { employer } from '@/lib/api/authorized/employer';
+
+export const metadata: Metadata = {
+  title: 'Matches',
+  description:
+    'Discover potential candidates for your job postings with our Employer Matches feature.',
+};
 
 export default async function Page({
   params,

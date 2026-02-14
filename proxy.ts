@@ -14,18 +14,23 @@ export default async function proxy(req: NextRequest) {
   const isAuthPage =
     pathname.startsWith('/login') ||
     pathname.startsWith('/register') ||
+    pathname.startsWith('/forgot') ||
     pathname.startsWith('/verify');
 
   if (isAuthPage) {
-    if (token && pathname !== '/verify') {
-      return NextResponse.redirect(new URL('/', req.url));
-    }
     return NextResponse.next();
   }
 
-  // if (!token) {
-  //   return NextResponse.redirect(new URL('/login', req.url));
-  // }
+  const isProtectedRoleRoute =
+    pathname.startsWith('/user') ||
+    pathname.startsWith('/employer') ||
+    pathname.startsWith('/admin');
+
+  if (isProtectedRoleRoute && !token) {
+    return NextResponse.redirect(new URL('/login', req.url));
+  }
+
+  return NextResponse.next();
 }
 
 export const config = {

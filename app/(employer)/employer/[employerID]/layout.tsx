@@ -1,6 +1,7 @@
 import type { Metadata, Route } from 'next';
 import { getNavForRole } from '@/utils';
 import { AuthorizedContent } from '@/components/layout/authorized';
+import { enforceRoleSession } from '@/lib/auth/route-session';
 
 export const metadata: Metadata = {
   title: 'Your Dashboard - Hiraya',
@@ -12,6 +13,12 @@ export default async function Layout({
   children,
   params,
 }: LayoutProps<'/employer/[employerID]'>) {
+  const resolvedParams = await params;
+  await enforceRoleSession({
+    expectedRole: 'employer',
+    routeUserId: resolvedParams.employerID,
+  });
+
   const navItems = getNavForRole('employer').map((i) => ({
     ...i,
     href: i.href as Route,
@@ -21,7 +28,7 @@ export default async function Layout({
     <AuthorizedContent
       role="employer"
       navItems={navItems}
-      params={{ employerID: (await params).employerID }}
+      params={{ employerID: resolvedParams.employerID }}
     >
       {children}
     </AuthorizedContent>

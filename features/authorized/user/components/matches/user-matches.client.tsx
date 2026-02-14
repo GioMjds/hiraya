@@ -1,10 +1,19 @@
 'use client';
 
 import Link from 'next/link';
-import { useOptimistic, useTransition } from 'react';
+import { useOptimistic, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { ApiError } from '@/configs/fetch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -17,6 +26,7 @@ import {
   useGetMatchHealth,
   useGetUserMatches,
 } from '@/features/authorized/user/hooks';
+import { UserWorkspaceHero } from '../shared/user-workspace-hero';
 
 interface UserMatchesClientProps {
   userId: string;
@@ -33,6 +43,7 @@ interface OptimisticState {
 }
 
 export function UserMatchesClient({ userId }: UserMatchesClientProps) {
+  const [isComputeOpen, setIsComputeOpen] = useState<boolean>(false);
   const [optimisticState, setOptimisticState] = useOptimistic<
     OptimisticState,
     Partial<OptimisticState>
@@ -58,6 +69,7 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
   const { data: userMatches, isLoading } = useGetUserMatches();
   const { data: matchHealth } = useGetMatchHealth();
   const { mutateAsync: computeMatches, isPending } = useComputeUserMatches();
+  const totalMatches = userMatches?.length ?? 0;
 
   const onSubmit = async (values: ComputeMatchesFormValues) => {
     startTransition(async () => {
@@ -81,6 +93,7 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
           message: 'Matches computed successfully.',
           type: 'success',
         });
+        setIsComputeOpen(false);
       } catch (error) {
         setOptimisticState({
           message: '',
@@ -104,19 +117,31 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Matches</h1>
-          <p className="text-sm text-muted-foreground">
-            Capability-based fit scoring across roles.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
-          </Button>
-        </div>
-      </div>
+      <UserWorkspaceHero
+        title="Matches"
+        description="Compute role-fit results from your evidence-backed capabilities and review high-impact gaps."
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
+            </Button>
+            <Button onClick={() => setIsComputeOpen(true)}>Compute settings</Button>
+          </>
+        }
+        badges={[
+          { label: 'Matches', value: totalMatches },
+          {
+            label: 'Engine',
+            value: matchHealth?.matching_source ?? 'networkx-engine',
+            variant: 'outline',
+          },
+          {
+            label: 'Algorithm',
+            value: matchHealth?.algorithm_version ?? 'engine-v2.0.0',
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <Card>
         <CardHeader className="pb-3">
@@ -126,7 +151,7 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="space-y-4">
             {optimisticState.type === 'loading' && (
               <Alert className="border-blue-200 bg-blue-50">
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -149,15 +174,9 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
               </Alert>
             )}
 
-            <div className="grid gap-3 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Algorithm version</Label>
-                <Input
-                  placeholder="internal-v2.0.0"
-                  disabled={isSubmitting || isPending || isTransitionPending}
-                  {...register('algorithmVersion')}
-                />
-              </div>
+            <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+              Configure algorithm version and optional role IDs in a modal, then
+              recompute to refresh results.
             </div>
 
             {matchHealth && (
@@ -174,18 +193,11 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
             )}
 
             <div className="flex items-center gap-2">
-              <Button type="submit" disabled={isSubmitting || isPending || isTransitionPending}>
-                {isPending || isTransitionPending ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Computing...
-                  </>
-                ) : (
-                  'Compute matches'
-                )}
+              <Button onClick={() => setIsComputeOpen(true)}>
+                Open compute modal
               </Button>
             </div>
-          </form>
+          </div>
         </CardContent>
       </Card>
 
@@ -193,7 +205,7 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <CardTitle className="text-base">Your results</CardTitle>
-            <Badge variant="outline">{userMatches?.length ?? 0} matches</Badge>
+            <Badge variant="outline">{totalMatches} matches</Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -245,6 +257,55 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={isComputeOpen} onOpenChange={setIsComputeOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Compute role matches</AlertDialogTitle>
+            <AlertDialogDescription>
+              Configure algorithm options before recomputing match results.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="space-y-3"
+          >
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Algorithm version</Label>
+              <Input
+                placeholder="internal-v2.0.0"
+                disabled={isSubmitting || isPending || isTransitionPending}
+                {...register('algorithmVersion')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Role IDs (optional)</Label>
+              <Input
+                placeholder="role-1, role-2"
+                disabled={isSubmitting || isPending || isTransitionPending}
+                {...register('roleIdsRaw')}
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="outline" disabled={isPending || isTransitionPending}>
+                  Cancel
+                </Button>
+              </AlertDialogCancel>
+              <Button type="submit" disabled={isSubmitting || isPending || isTransitionPending}>
+                {isPending || isTransitionPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Computing...
+                  </>
+                ) : (
+                  'Compute matches'
+                )}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

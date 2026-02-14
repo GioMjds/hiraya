@@ -13,6 +13,7 @@ import {
 } from '@/features/authorized/employer/consts';
 import { useGetEmployerDashboard } from '@/features/authorized/employer/hooks';
 import { ArrowRight, Building2, CheckCircle2, Gauge } from 'lucide-react';
+import { EmployerWorkspaceHero } from '../shared/employer-workspace-hero';
 
 interface EmployerDashboardClientProps {
   employerId: string;
@@ -25,31 +26,35 @@ export function EmployerDashboardClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Employer Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Create roles, publish postings, and review candidate matches.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/employer/${employerId}/org`}>
-              <Building2 className="mr-1 h-4 w-4" />
-              Organization
-            </Link>
-          </Button>
-          <Button asChild>
-            <Link href={`/employer/${employerId}/postings/new`}>
-              New posting
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <EmployerWorkspaceHero
+        title="Employer Dashboard"
+        description="Create roles, publish postings, and review candidate matches with clear pipeline visibility."
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href={`/employer/${employerId}/org`}>
+                <Building2 className="mr-1 h-4 w-4" />
+                Organization
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/employer/${employerId}/postings/new`}>
+                New posting
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </>
+        }
+        badges={[
+          { label: 'Active roles', value: data?.metrics.activeRolesCount ?? 0 },
+          { label: 'Open postings', value: data?.metrics.openPostingsCount ?? 0, variant: 'outline' },
+          {
+            label: 'Candidate matches',
+            value: data?.metrics.candidateMatchesCount ?? 0,
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {EMPLOYER_OVERVIEW_ITEMS.map((item) => (

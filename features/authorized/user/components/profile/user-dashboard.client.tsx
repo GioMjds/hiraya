@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,8 +22,40 @@ interface UserDashboardClientProps {
 
 export function UserDashboardClient({ userId }: UserDashboardClientProps) {
   const { data } = useGetDashboard();
+  const hasProfile = Boolean(data?.user);
   const hasEvidence = (data?.metrics.evidenceCount ?? 0) > 0;
   const hasMatches = (data?.metrics.matchesCount ?? 0) > 0;
+  const completedJourneySteps = [hasProfile, hasEvidence, hasMatches].filter(
+    Boolean,
+  ).length;
+  const readinessScore = Math.round((completedJourneySteps / 3) * 100);
+  const readinessLabel =
+    readinessScore === 100
+      ? 'Launch-ready'
+      : readinessScore >= 67
+        ? 'Growing strong'
+        : 'Getting started';
+  const suggestedNextStep = !hasProfile
+    ? 'Complete your profile baseline so recommendations and role matching become more accurate.'
+    : !hasEvidence
+      ? 'Add at least one piece of evidence to strengthen your strongest skills.'
+      : !hasMatches
+        ? 'Generate role matches and review your strongest opportunities.'
+        : 'Review recommendations and close your top capability gaps.';
+  const suggestedHref: Route = (!hasProfile
+    ? `/user/${userId}/profile`
+    : !hasEvidence
+      ? `/user/${userId}/evidence`
+      : !hasMatches
+        ? `/user/${userId}/matches`
+        : `/user/${userId}/recommendations`) as Route;
+  const suggestedActionLabel = !hasProfile
+    ? 'Complete profile'
+    : !hasEvidence
+      ? 'Add evidence'
+      : !hasMatches
+        ? 'Open matches'
+        : 'View recommendations';
 
   const stats = [
     {
@@ -71,6 +104,34 @@ export function UserDashboardClient({ userId }: UserDashboardClientProps) {
           </Button>
         </div>
       </div>
+
+      <Card className="border-border/80 bg-gradient-to-br from-card via-secondary/40 to-background">
+        <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-muted-foreground">
+              Growth readiness
+            </div>
+            <div className="text-2xl font-semibold tracking-tight">
+              {readinessScore}% {readinessLabel}
+            </div>
+            <p className="max-w-xl text-sm text-muted-foreground">
+              Keep moving: profile setup, evidence quality, and match review are
+              your strongest drivers for better outcomes.
+            </p>
+          </div>
+          <div className="grid w-full gap-2 sm:max-w-xs">
+            <div className="rounded-lg border border-border/70 bg-card/80 px-3 py-2 text-sm">
+              Profile: {hasProfile ? 'Done' : 'Pending'}
+            </div>
+            <div className="rounded-lg border border-border/70 bg-card/80 px-3 py-2 text-sm">
+              Evidence: {hasEvidence ? 'Done' : 'Pending'}
+            </div>
+            <div className="rounded-lg border border-border/70 bg-card/80 px-3 py-2 text-sm">
+              Matches: {hasMatches ? 'Done' : 'Pending'}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
@@ -172,8 +233,8 @@ export function UserDashboardClient({ userId }: UserDashboardClientProps) {
           <CardContent className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="text-sm text-muted-foreground">Readiness</div>
-              <Badge variant={data?.user ? 'secondary' : 'outline'}>
-                {data?.user ? 'Ready' : 'No data'}
+              <Badge variant={readinessScore >= 67 ? 'secondary' : 'outline'}>
+                {readinessScore}%
               </Badge>
             </div>
             <div className="flex items-center justify-between">
@@ -190,11 +251,10 @@ export function UserDashboardClient({ userId }: UserDashboardClientProps) {
                 Suggested next step
               </div>
               <div className="mt-1 text-sm text-muted-foreground">
-                Add at least one piece of evidence to strengthen your top
-                skills.
+                {suggestedNextStep}
               </div>
               <Button size="sm" className="mt-3" asChild>
-                <Link href={`/user/${userId}/evidence`}>Add evidence</Link>
+                <Link href={suggestedHref}>{suggestedActionLabel}</Link>
               </Button>
             </div>
           </CardContent>

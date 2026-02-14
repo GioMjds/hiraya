@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
@@ -6,6 +7,12 @@ import {
 import { user } from '@/lib/api/authorized/user';
 import { userProfileQueryKeys } from '@/features/authorized/user/hooks';
 import { UserProfileClient } from '@/features/authorized/user/components';
+
+export const metadata: Metadata = {
+  title: 'Your Profile',
+  description:
+    "View and manage your profile information on Hiraya's user dashboard.",
+};
 
 export default async function Page() {
   const queryClient = new QueryClient();

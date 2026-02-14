@@ -17,6 +17,7 @@ import {
   useGetAdminDashboard,
   useGetAdminEvidenceQueue,
 } from '@/features/authorized/admin/hooks';
+import { AdminWorkspaceHero } from '../shared/admin-workspace-hero';
 
 const actions = [
   { title: 'Review evidence queue', href: '/admin/evidence' },
@@ -70,29 +71,36 @@ export function AdminDashboardClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Admin Dashboard
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            Review evidence, manage the capability graph, and monitor platform
-            activity.
-          </p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href="/admin/evidence">Open evidence queue</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/admin/reviews">
-              Review requests
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </Button>
-        </div>
-      </div>
+      <AdminWorkspaceHero
+        title="Admin Dashboard"
+        description="Review evidence, manage capability graph quality, and monitor platform governance signals."
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/admin/evidence">Open evidence queue</Link>
+            </Button>
+            <Button asChild>
+              <Link href="/admin/reviews">
+                Review requests
+                <ArrowRight className="ml-1 h-4 w-4" />
+              </Link>
+            </Button>
+          </>
+        }
+        badges={[
+          { label: 'Pending reviews', value: pendingReviews },
+          {
+            label: 'Capabilities',
+            value: dashboard?.capabilitiesCount ?? 0,
+            variant: 'outline',
+          },
+          {
+            label: 'Avg match score',
+            value: `${researchMetrics?.averageMatchScore ?? 0}%`,
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {overview.map((item) => (

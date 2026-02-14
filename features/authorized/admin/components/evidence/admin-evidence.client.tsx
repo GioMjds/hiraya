@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, FolderCheck, Search } from 'lucide-react';
 import { useGetAdminEvidenceQueue } from '@/features/authorized/admin/hooks';
+import { AdminWorkspaceHero } from '../shared/admin-workspace-hero';
 
 export function AdminEvidenceClient() {
   const [search, setSearch] = useState<string>('');
@@ -27,20 +28,24 @@ export function AdminEvidenceClient() {
       );
     });
   }, [evidenceQueue, search]);
+  const pendingCount =
+    (evidenceQueue ?? []).filter((item) => item.status === 'PENDING').length;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Evidence</h1>
-          <p className="text-sm text-muted-foreground">
-            Browse submitted evidence and verify it against skill claims.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <Link href="/admin">Back to dashboard</Link>
-        </Button>
-      </div>
+      <AdminWorkspaceHero
+        title="Evidence"
+        description="Browse submissions and prioritize high-impact evidence verifications."
+        actions={
+          <Button variant="outline" asChild>
+            <Link href="/admin">Back to dashboard</Link>
+          </Button>
+        }
+        badges={[
+          { label: 'Queue size', value: evidenceQueue?.length ?? 0 },
+          { label: 'Pending', value: pendingCount, variant: 'outline' },
+        ]}
+      />
 
       <Card className="border-border/80">
         <CardHeader className="pb-3">

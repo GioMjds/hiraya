@@ -31,14 +31,22 @@ export function useGetUserMatchById(matchId: string) {
 }
 
 export function useComputeUserMatches() {
-	const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-	return useMutation({
-		mutationFn: async (data: ComputeUserMatchesData) =>
-			await user.computeUserMatches(data),
-		onSuccess: async () => {
-			await Promise.all([
-				queryClient.invalidateQueries({ queryKey: userMatchQueryKeys.list() }),
+  return useMutation({
+    mutationFn: async (data: ComputeUserMatchesData) => {
+      const health = await match.getHealth();
+      const algorithmVersion =
+        data.algorithmVersion?.trim() || health.algorithm_version;
+
+      return await user.computeUserMatches({
+        ...data,
+        algorithmVersion,
+      });
+    },
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: userMatchQueryKeys.list() }),
 				queryClient.invalidateQueries({ queryKey: userMatchQueryKeys.recommendations() }),
 				queryClient.invalidateQueries({ queryKey: ['authorized-user', 'dashboard'] }),
 			]);

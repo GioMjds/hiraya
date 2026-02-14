@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
@@ -6,6 +7,12 @@ import {
 import { EmployerMembersClient } from '@/features/authorized/employer/components';
 import { employerOrganizationQueryKeys } from '@/features/authorized/employer/hooks';
 import { employer } from '@/lib/api/authorized/employer';
+
+export const metadata: Metadata = {
+  title: 'Organization Members',
+  description:
+    'Manage your organization members, including adding new members, assigning roles, and overseeing team collaboration within your company.',
+};
 
 export default async function Page({
   params,

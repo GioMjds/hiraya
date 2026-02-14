@@ -1,6 +1,19 @@
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import type { Metadata } from 'next';
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
 import { admin } from '@/lib/api/authorized/admin';
-import { adminAuditQueryKeys, AdminAuditClient } from '@/features/authorized/admin';
+import {
+  adminAuditQueryKeys,
+  AdminAuditClient,
+} from '@/features/authorized/admin';
+
+export const metadata: Metadata = {
+  title: 'Audit Logs',
+  description: 'View and monitor audit logs for your application.',
+}
 
 export default async function Page() {
   const queryClient = new QueryClient();

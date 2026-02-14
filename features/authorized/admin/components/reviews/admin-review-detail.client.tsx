@@ -2,6 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,6 +30,7 @@ import {
   useGetAdminEvidenceReviewById,
   useRejectAdminEvidenceReview,
 } from '@/features/authorized/admin/hooks';
+import { AdminWorkspaceHero } from '../shared/admin-workspace-hero';
 
 interface AdminReviewDetailClientProps {
   reviewId: string;
@@ -28,6 +38,8 @@ interface AdminReviewDetailClientProps {
 
 export function AdminReviewDetailClient({ reviewId }: AdminReviewDetailClientProps) {
   const [reason, setReason] = useState<string>('');
+  const [isApproveOpen, setIsApproveOpen] = useState<boolean>(false);
+  const [isRejectOpen, setIsRejectOpen] = useState<boolean>(false);
   const { data: review, isLoading } = useGetAdminEvidenceReviewById(reviewId);
   const { mutateAsync: approveReview, isPending: isApproving } = useApproveAdminEvidenceReview();
   const { mutateAsync: rejectReview, isPending: isRejecting } = useRejectAdminEvidenceReview();
@@ -57,33 +69,43 @@ export function AdminReviewDetailClient({ reviewId }: AdminReviewDetailClientPro
           </BreadcrumbList>
         </Breadcrumb>
 
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Review</h1>
-            <p className="text-sm text-muted-foreground">Make a decision for a review request.</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/admin/reviews">
-                <ArrowLeft className="mr-1 h-4 w-4" />
-                Back
-              </Link>
-            </Button>
-            <Button
-              variant="outline"
-              disabled={!reason.trim() || isPending}
-              onClick={async () => await rejectReview({ id: reviewId, reason: reason.trim() })}
-            >
-              <X className="mr-1 h-4 w-4" />
-              Reject
-            </Button>
-            <Button disabled={isPending} onClick={async () => await approveReview(reviewId)}>
-              <Check className="mr-1 h-4 w-4" />
-              Approve
-            </Button>
-          </div>
-        </div>
+        <AdminWorkspaceHero
+          title="Review"
+          description="Make clear and consistent governance decisions for queued evidence reviews."
+          actions={
+            <>
+              <Button variant="outline" asChild>
+                <Link href="/admin/reviews">
+                  <ArrowLeft className="mr-1 h-4 w-4" />
+                  Back
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                disabled={isPending}
+                onClick={() => setIsRejectOpen(true)}
+              >
+                <X className="mr-1 h-4 w-4" />
+                Reject
+              </Button>
+              <Button
+                disabled={isPending}
+                onClick={() => setIsApproveOpen(true)}
+              >
+                <Check className="mr-1 h-4 w-4" />
+                Approve
+              </Button>
+            </>
+          }
+          badges={[
+            { label: 'Review ID', value: reviewId },
+            {
+              label: 'Status',
+              value: review?.status ?? 'PENDING',
+              variant: 'outline',
+            },
+          ]}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -104,16 +126,6 @@ export function AdminReviewDetailClient({ reviewId }: AdminReviewDetailClientPro
                   {review?.status ?? 'PENDING'}
                 </Badge>
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="text-sm font-medium">Rejection reason</div>
-              <Input
-                placeholder="Enter rejection reason"
-                value={reason}
-                onChange={(event) => setReason(event.target.value)}
-                disabled={isPending}
-              />
             </div>
 
             <div className="rounded-lg border p-4 text-sm text-muted-foreground">
@@ -142,6 +154,72 @@ export function AdminReviewDetailClient({ reviewId }: AdminReviewDetailClientPro
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog open={isApproveOpen} onOpenChange={setIsApproveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve this review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirm approval for this queued review item.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" disabled={isPending}>
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              disabled={isPending}
+              onClick={async () => {
+                await approveReview(reviewId);
+                setIsApproveOpen(false);
+              }}
+            >
+              Approve
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isRejectOpen} onOpenChange={setIsRejectOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject this review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Provide a reason before rejecting this queued review.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-2">
+            <Input
+              placeholder="Rejection reason"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              disabled={isPending}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" disabled={isPending}>
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isPending || !reason.trim()}
+              onClick={async () => {
+                await rejectReview({ id: reviewId, reason: reason.trim() });
+                setIsRejectOpen(false);
+                setReason('');
+              }}
+            >
+              Reject review
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

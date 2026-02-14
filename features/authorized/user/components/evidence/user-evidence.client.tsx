@@ -5,6 +5,15 @@ import { useMemo, useOptimistic, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ApiError } from '@/configs/fetch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -33,8 +42,13 @@ import {
   useDeleteUserEvidence,
   useGetUserEvidence,
   useGetUserSkills,
+  useUpdateUserEvidence,
 } from '@/features/authorized/user/hooks';
-import type { EvidenceType } from '@/lib/api/authorized/user';
+import type {
+  EvidenceType,
+  EvidenceWithRelations,
+} from '@/lib/api/authorized/user';
+import { UserWorkspaceHero } from '../shared/user-workspace-hero';
 
 interface UserEvidenceClientProps {
   userId: string;
@@ -72,8 +86,21 @@ const toTitle = (value: string) =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(' ');
 
+const toIsoDate = (date: string): string | null =>
+  date ? new Date(`${date}T00:00:00.000Z`).toISOString() : null;
+
+const toDateInput = (value: string | null | undefined): string => {
+  if (!value) return '';
+  return new Date(value).toISOString().slice(0, 10);
+};
+
 export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
   const [search, setSearch] = useState<string>('');
+  const [editingEvidence, setEditingEvidence] =
+    useState<EvidenceWithRelations | null>(null);
+  const [deletingEvidenceId, setDeletingEvidenceId] = useState<string | null>(
+    null,
+  );
   const [optimisticState, setOptimisticState] = useOptimistic<
     OptimisticState,
     Partial<OptimisticState>
@@ -105,14 +132,41 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
     },
   });
 
+  const {
+    register: editRegister,
+    control: editControl,
+    handleSubmit: handleEditSubmit,
+    reset: resetEditForm,
+    setError: setEditError,
+    formState: { errors: editErrors, isSubmitting: isEditSubmitting },
+  } = useForm<EvidenceFormValues>({
+    mode: 'onSubmit',
+    defaultValues: {
+      type: 'project',
+      title: '',
+      description: '',
+      issuedBy: '',
+      issuedAt: '',
+      expiresAt: '',
+      skillId: 'none',
+      linkUrl: '',
+      linkLabel: '',
+    },
+  });
+
   const { data: userEvidence, isLoading } = useGetUserEvidence();
   const { data: userSkills } = useGetUserSkills();
-  const { mutateAsync: createUserEvidence, isPending: isCreating } = useCreateUserEvidence();
-  const { mutateAsync: deleteUserEvidence, isPending: isDeleting } = useDeleteUserEvidence();
+  const { mutateAsync: createUserEvidence, isPending: isCreating } =
+    useCreateUserEvidence();
+  const { mutateAsync: updateUserEvidence, isPending: isUpdating } =
+    useUpdateUserEvidence();
+  const { mutateAsync: deleteUserEvidence, isPending: isDeleting } =
+    useDeleteUserEvidence();
 
   const totalEvidence = userEvidence?.length ?? 0;
   const linkedEvidence =
-    userEvidence?.filter((item) => (item.skillLinks?.length ?? 0) > 0).length ?? 0;
+    userEvidence?.filter((item) => (item.skillLinks?.length ?? 0) > 0).length ??
+    0;
   const readiness = totalEvidence > 0 ? 'Ready' : 'Needs evidence';
 
   const filteredEvidence = useMemo(() => {
@@ -127,9 +181,6 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
       );
     });
   }, [search, userEvidence]);
-
-  const toIsoDate = (date: string): string | null =>
-    date ? new Date(`${date}T00:00:00.000Z`).toISOString() : null;
 
   const onSubmit = async (values: EvidenceFormValues) => {
     startTransition(async () => {
@@ -148,7 +199,12 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
           expiresAt: toIsoDate(values.expiresAt),
           skillIds: values.skillId !== 'none' ? [values.skillId] : undefined,
           links: values.linkUrl.trim()
-            ? [{ url: values.linkUrl.trim(), label: values.linkLabel.trim() || null }]
+            ? [
+                {
+                  url: values.linkUrl.trim(),
+                  label: values.linkLabel.trim() || null,
+                },
+              ]
             : undefined,
         });
 
@@ -183,7 +239,76 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
 
         setError('root', {
           type: 'server',
-          message: error instanceof Error ? error.message : 'Failed to create evidence.',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to create evidence.',
+        });
+      }
+    });
+  };
+
+  const openEditDialog = (evidence: EvidenceWithRelations) => {
+    setEditingEvidence(evidence);
+    resetEditForm({
+      type: evidence.type,
+      title: evidence.title,
+      description: evidence.description ?? '',
+      issuedBy: evidence.issuedBy ?? '',
+      issuedAt: toDateInput(evidence.issuedAt),
+      expiresAt: toDateInput(evidence.expiresAt),
+      skillId: evidence.skillLinks?.[0]?.id ?? 'none',
+      linkUrl: evidence.links?.[0]?.url ?? '',
+      linkLabel: evidence.links?.[0]?.label ?? '',
+    });
+  };
+
+  const onSubmitEdit = async (values: EvidenceFormValues) => {
+    if (!editingEvidence) return;
+
+    startTransition(async () => {
+      setOptimisticState({
+        message: 'Updating evidence...',
+        type: 'loading',
+      });
+
+      try {
+        await updateUserEvidence({
+          evidenceId: editingEvidence.id,
+          data: {
+            type: values.type,
+            title: values.title.trim(),
+            description: values.description.trim() || null,
+            issuedBy: values.issuedBy.trim() || null,
+            issuedAt: toIsoDate(values.issuedAt),
+            expiresAt: toIsoDate(values.expiresAt),
+            skillIds: values.skillId !== 'none' ? [values.skillId] : undefined,
+            links: values.linkUrl.trim()
+              ? [
+                  {
+                    url: values.linkUrl.trim(),
+                    label: values.linkLabel.trim() || null,
+                  },
+                ]
+              : undefined,
+          },
+        });
+        setEditingEvidence(null);
+        setOptimisticState({
+          message: 'Evidence updated successfully.',
+          type: 'success',
+        });
+      } catch (error) {
+        setOptimisticState({
+          message: '',
+          type: 'error',
+        });
+        setEditError('root', {
+          type: 'server',
+          message:
+            error instanceof Error
+              ? error.message
+              : 'Failed to update evidence.',
         });
       }
     });
@@ -192,29 +317,35 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
   const handleDelete = async (evidenceId: string) => {
     try {
       await deleteUserEvidence(evidenceId);
+      setDeletingEvidenceId(null);
     } catch (error) {
       setError('root', {
         type: 'server',
-        message: error instanceof Error ? error.message : 'Failed to delete evidence.',
+        message:
+          error instanceof Error ? error.message : 'Failed to delete evidence.',
       });
     }
   };
 
+  const deletingEvidence =
+    (userEvidence ?? []).find((item) => item.id === deletingEvidenceId) ?? null;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Evidence</h1>
-          <p className="text-sm text-muted-foreground">
-            Artifacts linked to your skill claims.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <UserWorkspaceHero
+        title="Evidence"
+        description="Add verifiable artifacts that support your skills and improve trust in your profile."
+        actions={
           <Button variant="outline" asChild>
-            <Link href={`/user/${userId}/dashboard`}>Back</Link>
+            <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
           </Button>
-        </div>
-      </div>
+        }
+        badges={[
+          { label: 'Total', value: totalEvidence },
+          { label: 'Linked', value: linkedEvidence, variant: 'outline' },
+          { label: 'Readiness', value: readiness, variant: 'outline' },
+        ]}
+      />
 
       <Card>
         <CardHeader className="pb-3">
@@ -251,7 +382,12 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
                   name="type"
                   control={control}
                   render={({ field }) => (
-                    <Select value={field.value} onValueChange={(value) => field.onChange(value as EvidenceType)}>
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) =>
+                        field.onChange(value as EvidenceType)
+                      }
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -273,7 +409,11 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
                   disabled={isSubmitting || isPending || isCreating}
                   {...register('title', { required: 'Title is required' })}
                 />
-                {errors.title && <p className="text-sm text-destructive">{errors.title.message}</p>}
+                {errors.title && (
+                  <p className="text-sm text-destructive">
+                    {errors.title.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -354,7 +494,10 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
             </div>
 
             <div className="flex items-center gap-2">
-              <Button type="submit" disabled={isSubmitting || isPending || isCreating}>
+              <Button
+                type="submit"
+                disabled={isSubmitting || isPending || isCreating}
+              >
                 {isPending || isCreating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -406,14 +549,23 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
                     >
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
-                          <div className="font-medium">{item.title}</div>
-                          <Badge variant="outline" className="text-xs uppercase">
+                          <div className="text-lg font-semibold">{item.title}</div>
+                          <Badge
+                            variant="outline"
+                            className="text-xs capitalize"
+                          >
                             {item.type}
                           </Badge>
                         </div>
-                        <div className="text-xs text-muted-foreground">Evidence ID: {item.id}</div>
                       </div>
                       <div className="flex items-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(item)}
+                        >
+                          Edit
+                        </Button>
                         <Button variant="outline" size="sm" asChild>
                           <Link href={`/user/${userId}/evidence/${item.id}`}>
                             Open
@@ -423,7 +575,7 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => void handleDelete(item.id)}
+                          onClick={() => setDeletingEvidenceId(item.id)}
                           disabled={isDeleting}
                         >
                           <Trash2 className="mr-1 h-4 w-4" />
@@ -450,7 +602,8 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
                 </div>
                 <div className="text-sm font-medium">Evidence quality</div>
                 <div className="text-sm text-muted-foreground">
-                  Keep evidence linked to skills to improve explainability in role matches.
+                  Keep evidence linked to skills to improve explainability in
+                  role matches.
                 </div>
               </div>
               <div className="rounded-lg border p-4 space-y-3">
@@ -476,6 +629,184 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog
+        open={Boolean(editingEvidence)}
+        onOpenChange={(open) => {
+          if (!open) setEditingEvidence(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit evidence</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update evidence details and linked skill metadata.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleEditSubmit(onSubmitEdit)} className="space-y-3">
+            {editErrors.root && (
+              <Alert variant="destructive">
+                <AlertDescription>{editErrors.root.message}</AlertDescription>
+              </Alert>
+            )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Type</Label>
+                <Controller
+                  name="type"
+                  control={editControl}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) =>
+                        field.onChange(value as EvidenceType)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {EVIDENCE_TYPES.map((item) => (
+                          <SelectItem key={item} value={item}>
+                            {toTitle(item)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Title</Label>
+                <Input
+                  disabled={isEditSubmitting || isPending || isUpdating}
+                  {...editRegister('title', { required: 'Title is required' })}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Description</Label>
+              <Textarea
+                disabled={isEditSubmitting || isPending || isUpdating}
+                {...editRegister('description')}
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Issued by</Label>
+                <Input
+                  disabled={isEditSubmitting || isPending || isUpdating}
+                  {...editRegister('issuedBy')}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Linked skill</Label>
+                <Controller
+                  name="skillId"
+                  control={editControl}
+                  render={({ field }) => (
+                    <Select value={field.value} onValueChange={field.onChange}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">None</SelectItem>
+                        {(userSkills ?? []).map((item) => (
+                          <SelectItem key={item.id} value={item.id}>
+                            {item.skill?.name ?? item.skillId}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Issued at</Label>
+                <Input type="date" {...editRegister('issuedAt')} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Expires at</Label>
+                <Input type="date" {...editRegister('expiresAt')} />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Link URL</Label>
+                <Input {...editRegister('linkUrl')} />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Link label</Label>
+                <Input {...editRegister('linkLabel')} />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="outline" disabled={isUpdating}>
+                  Cancel
+                </Button>
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                disabled={isEditSubmitting || isPending || isUpdating}
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save changes'
+                )}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={Boolean(deletingEvidenceId)}
+        onOpenChange={(open) => {
+          if (!open) setDeletingEvidenceId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this evidence?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action permanently deletes the selected evidence.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="text-sm text-muted-foreground">
+            This will permanently remove{' '}
+            <span className="font-medium text-foreground">
+              {deletingEvidence?.title ?? 'this evidence'}
+            </span>
+            .
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" disabled={isDeleting}>
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isDeleting}
+              onClick={() => {
+                if (deletingEvidenceId) {
+                  void handleDelete(deletingEvidenceId);
+                }
+              }}
+            >
+              {isDeleting ? 'Deleting...' : 'Delete evidence'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

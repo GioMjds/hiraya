@@ -1,38 +1,69 @@
 'use client';
 
 import Link from 'next/link';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import {
-  useGetEmployerCandidateMatches,
-  type EmployerRoleCandidateOverviewItem,
-} from '@/features/authorized/employer/hooks';
+import { useGetEmployerCandidateMatches } from '@/features/authorized/employer/hooks';
 import { ArrowRight, Search, Target } from 'lucide-react';
+import type { EmployerRoleCandidateOverviewItem } from '@/lib/api/authorized/employer';
+import { EmployerWorkspaceHero } from '../shared/employer-workspace-hero';
 
 interface EmployerMatchesClientProps {
   employerId: string;
 }
 
-export function EmployerMatchesClient({ employerId }: EmployerMatchesClientProps) {
+export function EmployerMatchesClient({
+  employerId,
+}: EmployerMatchesClientProps) {
+  const [isTriageOpen, setIsTriageOpen] = useState<boolean>(false);
+  const [minimumScore, setMinimumScore] = useState<string>('70');
+  const [triageNote, setTriageNote] = useState<string>('');
+
   const { data } = useGetEmployerCandidateMatches();
+
   const roles = Array.isArray(data) ? data : [];
+  const candidateTotal = roles.reduce(
+    (sum, row) => sum + row.candidateCount,
+    0,
+  );
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Matches</h1>
-          <p className="text-sm text-muted-foreground">
-            Pick a role to view candidate fit scores.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <Link href={`/employer/${employerId}/dashboard`}>Back to dashboard</Link>
-        </Button>
-      </div>
+      <EmployerWorkspaceHero
+        title="Matches"
+        description="Review role-by-role candidate fit and prioritize strongest opportunities quickly."
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href={`/employer/${employerId}/dashboard`}>
+                Back to dashboard
+              </Link>
+            </Button>
+            <Button onClick={() => setIsTriageOpen(true)}>
+              Triage defaults
+            </Button>
+          </>
+        }
+        badges={[
+          { label: 'Roles', value: roles.length },
+          { label: 'Candidates', value: candidateTotal, variant: 'outline' },
+          { label: 'Min score', value: `${minimumScore}%`, variant: 'outline' },
+        ]}
+      />
 
       <Card className="border-border/80">
         <CardHeader className="pb-3">
@@ -71,7 +102,9 @@ export function EmployerMatchesClient({ employerId }: EmployerMatchesClientProps
                       Candidates: {item.candidateCount}
                     </Badge>
                     <Button variant="outline" size="sm" asChild>
-                      <Link href={`/employer/${employerId}/matches/${item.role.id}`}>
+                      <Link
+                        href={`/employer/${employerId}/matches/${item.role.id}`}
+                      >
                         Open
                         <ArrowRight className="ml-1 h-4 w-4" />
                       </Link>
@@ -83,6 +116,49 @@ export function EmployerMatchesClient({ employerId }: EmployerMatchesClientProps
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={isTriageOpen} onOpenChange={setIsTriageOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Triage defaults</AlertDialogTitle>
+            <AlertDialogDescription>
+              Configure default shortlist thresholds for match review.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="minimum-score">Minimum shortlist score</Label>
+              <Input
+                id="minimum-score"
+                type="number"
+                min={0}
+                max={100}
+                value={minimumScore}
+                onChange={(event) => setMinimumScore(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="triage-note">Triage note</Label>
+              <Input
+                id="triage-note"
+                placeholder="Add a reminder for your team"
+                value={triageNote}
+                onChange={(event) => setTriageNote(event.target.value)}
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="outline">
+                  Close
+                </Button>
+              </AlertDialogCancel>
+              <Button type="button" onClick={() => setIsTriageOpen(false)}>
+                Save defaults
+              </Button>
+            </AlertDialogFooter>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

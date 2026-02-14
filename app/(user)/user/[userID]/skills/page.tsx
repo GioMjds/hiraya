@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
@@ -6,6 +7,11 @@ import {
 import { user } from '@/lib/api/authorized/user';
 import { userSkillQueryKeys } from '@/features/authorized/user/hooks';
 import { UserSkillsClient } from '@/features/authorized/user/components';
+
+export const metadata: Metadata = {
+  title: 'Your Skills',
+  description: "View and manage your skills on Hiraya's user dashboard.",
+};
 
 export default async function Page({
   params,

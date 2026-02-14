@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useGetEmployerRoleById } from '@/features/authorized/employer/hooks';
 import { CheckCircle2, Gauge, Target } from 'lucide-react';
+import { EmployerWorkspaceHero } from '../shared/employer-workspace-hero';
 
 interface EmployerRoleDetailClientProps {
   employerId: string;
@@ -21,22 +22,28 @@ export function EmployerRoleDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Role detail</h1>
-          <p className="text-sm text-muted-foreground">
-            View role requirements and how matches are computed.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
-            <Link href={`/employer/${employerId}/roles`}>Back to roles</Link>
-          </Button>
-          <Button asChild>
-            <Link href={`/employer/${employerId}/matches/${roleId}`}>View matches</Link>
-          </Button>
-        </div>
-      </div>
+      <EmployerWorkspaceHero
+        title="Role detail"
+        description="Inspect role requirements and keep match decision criteria clear."
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href={`/employer/${employerId}/roles`}>Back to roles</Link>
+            </Button>
+            <Button asChild>
+              <Link href={`/employer/${employerId}/matches/${roleId}`}>View matches</Link>
+            </Button>
+          </>
+        }
+        badges={[
+          { label: 'Role ID', value: roleDetail?.role.id ?? roleId },
+          {
+            label: 'Status',
+            value: roleDetail?.role.status?.toUpperCase() ?? 'DRAFT',
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">

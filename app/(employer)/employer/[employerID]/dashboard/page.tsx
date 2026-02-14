@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
@@ -6,6 +7,12 @@ import {
 import { employer } from '@/lib/api/authorized/employer';
 import { employerDashboardQueryKeys } from '@/features/authorized/employer/hooks';
 import { EmployerDashboardClient } from '@/features/authorized/employer/components';
+
+export const metadata: Metadata = {
+  title: 'Employer Dashboard',
+  description:
+    'Overview of job postings, applications, and candidate interactions for employers.',
+};
 
 export default async function Page({
   params,

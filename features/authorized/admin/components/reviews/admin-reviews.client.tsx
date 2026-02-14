@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, Search, ShieldCheck } from 'lucide-react';
 import { useGetAdminEvidenceQueue } from '@/features/authorized/admin/hooks';
+import { AdminWorkspaceHero } from '../shared/admin-workspace-hero';
 
 function getStatusVariant(status: string): 'secondary' | 'outline' {
   if (status === 'PENDING') return 'secondary';
@@ -32,20 +33,24 @@ export function AdminReviewsClient() {
       );
     });
   }, [reviews, search]);
+  const pendingCount =
+    (reviews ?? []).filter((item) => item.status === 'PENDING').length;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Reviews</h1>
-          <p className="text-sm text-muted-foreground">
-            Admin review queue for evidence verification and graph governance.
-          </p>
-        </div>
-        <Button size="sm" asChild>
-          <Link href="/admin">Back to dashboard</Link>
-        </Button>
-      </div>
+      <AdminWorkspaceHero
+        title="Reviews"
+        description="Triaging evidence review requests quickly keeps governance decisions consistent."
+        actions={
+          <Button size="sm" asChild>
+            <Link href="/admin">Back to dashboard</Link>
+          </Button>
+        }
+        badges={[
+          { label: 'Queue size', value: reviews?.length ?? 0 },
+          { label: 'Pending', value: pendingCount, variant: 'outline' },
+        ]}
+      />
 
       <Card>
         <CardHeader className="pb-3">

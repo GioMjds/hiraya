@@ -1,21 +1,33 @@
 'use client';
 
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { EmployerWorkspaceHero } from '../shared/employer-workspace-hero';
 
-export function EmployerNewPostingClient() {
+interface EmployerNewPostingClientProps {
+  employerId: string;
+}
+
+export function EmployerNewPostingClient({
+  employerId,
+}: EmployerNewPostingClientProps) {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">New posting</h1>
-        <p className="text-sm text-muted-foreground">
-          Mock posting creation form layout.
-        </p>
-      </div>
+      <EmployerWorkspaceHero
+        title="New posting"
+        description="Draft a clear, role-linked posting before publication."
+        actions={
+          <Button variant="outline" asChild>
+            <Link href={`/employer/${employerId}/postings`}>Back to postings</Link>
+          </Button>
+        }
+        badges={[{ label: 'Mode', value: 'Draft', variant: 'outline' }]}
+      />
 
       <Card>
         <CardHeader>

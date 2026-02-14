@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
 import { admin } from '@/lib/api/authorized/admin';
 import {
@@ -5,6 +6,11 @@ import {
   adminEvidenceQueryKeys,
   AdminDashboardClient,
 } from '@/features/authorized/admin';
+
+export const metadata: Metadata = {
+  title: 'Admin Dashboard',
+  description: 'Overview of platform metrics and pending tasks for administrators.',
+}
 
 export default async function Page() {
   const queryClient = new QueryClient();

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useOptimistic, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -62,7 +63,9 @@ export function LoginModal() {
           message: 'Login successful! Redirecting...',
           type: 'success',
         });
-        router.push(getPostLoginRoute(response.user.role, response.user.id));
+        router.push(
+          getPostLoginRoute(response.user.role, response.user.id) as Route,
+        );
       } catch (error) {
         setOptimisticState({ message: '', type: 'error' });
         if (error instanceof ApiError) {
@@ -73,7 +76,7 @@ export function LoginModal() {
   };
 
   return (
-    <AuthModal title='Welcome Back to Hiraya!'>
+    <AuthModal title="Welcome Back to Hiraya!">
       <div className="space-y-1.5 mb-6">
         <h2 className="text-2xl font-bold tracking-tight">Welcome back</h2>
         <p className="text-sm text-muted-foreground">
@@ -162,7 +165,9 @@ export function LoginModal() {
             </button>
           </div>
           {errors.password && (
-            <p className="text-sm text-destructive">{errors.password.message}</p>
+            <p className="text-sm text-destructive">
+              {errors.password.message}
+            </p>
           )}
         </div>
 

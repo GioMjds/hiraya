@@ -83,9 +83,19 @@ export function NavRail({ items, role }: NavRailProps) {
     return `/${locale}${href}` as Route;
   };
 
+  const normalizePath = (value: string): string => {
+    if (value.endsWith('/') && value !== '/') {
+      return value.slice(0, -1);
+    }
+    return value;
+  };
+
   const isPathActive = (href: Route): boolean => {
-    const localizedHref = getLocalizedHref(href);
-    return pathname === localizedHref;
+    const localizedHref = normalizePath(getLocalizedHref(href));
+    const currentPath = normalizePath(pathname);
+    return (
+      currentPath === localizedHref || currentPath.startsWith(`${localizedHref}/`)
+    );
   };
 
   const isParentActive = (children?: NavItemBase[]): boolean => {
@@ -111,8 +121,8 @@ export function NavRail({ items, role }: NavRailProps) {
     const localizedHref = getLocalizedHref(item.href);
     const isActive = isPathActive(item.href);
     const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.has(item.id);
     const parentIsActive = isParentActive(item.children);
+    const isExpanded = parentIsActive || expandedItems.has(item.id);
 
     const button = (
       <Button
@@ -120,7 +130,9 @@ export function NavRail({ items, role }: NavRailProps) {
         asChild={!hasChildren}
         variant={isActive ? 'secondary' : 'ghost'}
         className={cn(
-          'w-full justify-start transition-all duration-200',
+          'group h-10 w-full justify-start transition-all duration-200 border-l-2 rounded-l-none',
+          depth > 0 && !active ? 'ml-3 w-[calc(100%-0.75rem)]' : '',
+          isActive || parentIsActive ? 'border-l-primary' : 'border-l-transparent',
           isActive || parentIsActive
             ? roleConfig.navItemActiveClassName
             : roleConfig.navItemInactiveClassName,
@@ -168,7 +180,7 @@ export function NavRail({ items, role }: NavRailProps) {
       </Button>
     );
 
-    if (active && !hasChildren) {
+    if (active) {
       return (
         <Tooltip key={item.id}>
           <TooltipTrigger asChild>{button}</TooltipTrigger>
@@ -194,15 +206,20 @@ export function NavRail({ items, role }: NavRailProps) {
   return (
     <div
       className={cn(
-        'flex flex-col h-full bg-zinc-50/50 dark:bg-zinc-900/50 transition-all duration-300',
+        'flex flex-col h-full bg-sidebar/90 backdrop-blur transition-all duration-300',
         active ? 'w-16' : 'w-64',
       )}
     >
       <ScrollArea className="flex-1 px-3 py-4">
         <TooltipProvider delayDuration={0}>
           {!active && (
-            <div className="mb-3 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              {roleConfig.railTitle}
+            <div className="mb-3 rounded-xl border border-border/70 bg-card/70 px-3 py-2">
+              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {roleConfig.railTitle}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {roleConfig.railDescription}
+              </p>
             </div>
           )}
           <div className="space-y-1">

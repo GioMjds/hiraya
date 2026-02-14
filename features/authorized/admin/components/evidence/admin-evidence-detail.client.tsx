@@ -1,7 +1,16 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
+import { useState } from 'react';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,38 +22,52 @@ import {
   useGetAdminEvidenceReviewById,
   useRejectAdminEvidenceReview,
 } from '@/features/authorized/admin/hooks';
+import { AdminWorkspaceHero } from '../shared/admin-workspace-hero';
 
 interface AdminEvidenceDetailClientProps {
   reviewId: string;
 }
 
-export function AdminEvidenceDetailClient({ reviewId }: AdminEvidenceDetailClientProps) {
+export function AdminEvidenceDetailClient({
+  reviewId,
+}: AdminEvidenceDetailClientProps) {
   const [reason, setReason] = useState<string>('');
+  const [isApproveOpen, setIsApproveOpen] = useState<boolean>(false);
+  const [isRejectOpen, setIsRejectOpen] = useState<boolean>(false);
   const { data: review, isLoading } = useGetAdminEvidenceReviewById(reviewId);
-  const { mutateAsync: approveReview, isPending: isApproving } = useApproveAdminEvidenceReview();
-  const { mutateAsync: rejectReview, isPending: isRejecting } = useRejectAdminEvidenceReview();
+  const { mutateAsync: approveReview, isPending: isApproving } =
+    useApproveAdminEvidenceReview();
+  const { mutateAsync: rejectReview, isPending: isRejecting } =
+    useRejectAdminEvidenceReview();
 
   const handleReject = async () => {
     if (!reason.trim()) return;
     await rejectReview({ id: reviewId, reason: reason.trim() });
     setReason('');
+    setIsRejectOpen(false);
   };
 
   const isDecisionPending = isApproving || isRejecting;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Evidence Detail</h1>
-          <p className="text-sm text-muted-foreground">
-            Inspect the artifact and verify its linked skills.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <Link href="/admin/evidence">Back to evidence</Link>
-        </Button>
-      </div>
+      <AdminWorkspaceHero
+        title="Evidence detail"
+        description="Inspect artifacts and keep skill-verification decisions consistent."
+        actions={
+          <Button variant="outline" asChild>
+            <Link href="/admin/evidence">Back to evidence</Link>
+          </Button>
+        }
+        badges={[
+          { label: 'Review ID', value: reviewId },
+          {
+            label: 'Status',
+            value: review?.status ?? 'PENDING',
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
@@ -53,13 +76,21 @@ export function AdminEvidenceDetailClient({ reviewId }: AdminEvidenceDetailClien
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="space-y-1">
                   <CardTitle className="text-base">Review context</CardTitle>
-                  <div className="text-sm text-muted-foreground">Evidence submission</div>
+                  <div className="text-sm text-muted-foreground">
+                    Evidence submission
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant={review?.status === 'PENDING' ? 'secondary' : 'outline'}>
+                  <Badge
+                    variant={
+                      review?.status === 'PENDING' ? 'secondary' : 'outline'
+                    }
+                  >
                     {review?.status ?? 'PENDING'}
                   </Badge>
-                  <Badge variant="outline">{review?.entityType ?? 'evidence'}</Badge>
+                  <Badge variant="outline">
+                    {review?.entityType ?? 'evidence'}
+                  </Badge>
                 </div>
               </div>
             </CardHeader>
@@ -67,7 +98,9 @@ export function AdminEvidenceDetailClient({ reviewId }: AdminEvidenceDetailClien
               <div className="rounded-lg border p-4">
                 <div className="text-sm font-medium">Action</div>
                 <div className="mt-1 text-sm text-muted-foreground">
-                  {isLoading ? 'Loading review details...' : review?.action ?? 'verify'}
+                  {isLoading
+                    ? 'Loading review details...'
+                    : (review?.action ?? 'verify')}
                 </div>
               </div>
 
@@ -84,7 +117,8 @@ export function AdminEvidenceDetailClient({ reviewId }: AdminEvidenceDetailClien
                   Verification guardrails
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Verify artifact relevance, accessibility, and consistency with declared claims.
+                  Verify artifact relevance, accessibility, and consistency with
+                  declared claims.
                 </div>
               </div>
             </CardContent>
@@ -98,25 +132,28 @@ export function AdminEvidenceDetailClient({ reviewId }: AdminEvidenceDetailClien
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="rounded-lg border p-3 flex items-center justify-between">
-                <div className="text-sm text-muted-foreground">Decision state</div>
-                <Badge variant={review?.status === 'PENDING' ? 'secondary' : 'outline'}>
+                <div className="text-sm text-muted-foreground">
+                  Decision state
+                </div>
+                <Badge
+                  variant={
+                    review?.status === 'PENDING' ? 'secondary' : 'outline'
+                  }
+                >
                   {review?.status ?? 'PENDING'}
                 </Badge>
               </div>
               <div className="grid gap-2">
-                <Button disabled={isDecisionPending} onClick={async () => await approveReview(reviewId)}>
+                <Button
+                  disabled={isDecisionPending}
+                  onClick={() => setIsApproveOpen(true)}
+                >
                   Approve
                 </Button>
-                <Input
-                  placeholder="Rejection reason"
-                  value={reason}
-                  onChange={(event) => setReason(event.target.value)}
-                  disabled={isDecisionPending}
-                />
                 <Button
                   variant="destructive"
-                  disabled={!reason.trim() || isDecisionPending}
-                  onClick={handleReject}
+                  disabled={isDecisionPending}
+                  onClick={() => setIsRejectOpen(true)}
                 >
                   Reject
                 </Button>
@@ -144,6 +181,74 @@ export function AdminEvidenceDetailClient({ reviewId }: AdminEvidenceDetailClien
           </Card>
         </div>
       </div>
+
+      <AlertDialog open={isApproveOpen} onOpenChange={setIsApproveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve evidence review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Confirm the evidence review approval action.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDecisionPending}
+              >
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              disabled={isDecisionPending}
+              onClick={async () => {
+                await approveReview(reviewId);
+                setIsApproveOpen(false);
+              }}
+            >
+              Approve
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isRejectOpen} onOpenChange={setIsRejectOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject evidence review?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Provide rejection rationale before finalizing this decision.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <Input
+            placeholder="Rejection reason"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            disabled={isDecisionPending}
+          />
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isDecisionPending}
+              >
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!reason.trim() || isDecisionPending}
+              onClick={() => void handleReject()}
+            >
+              Reject
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { redirectAuthenticatedUserToHome } from '@/lib/auth/route-session';
 
 export const metadata: Metadata = {
   title: {
@@ -10,6 +11,7 @@ export const metadata: Metadata = {
     'Hiraya is a platform designed to address the fundamental limitations of traditional hiring and skill assessment systems. By modeling skills, capabilities, and roles as interconnected entities within a graph structure, Hiraya enables more accurate, transparent, and fair matching between job seekers and opportunities.',
 };
 
-export default function AuthLayout({ children }: LayoutProps<'/'>) {
+export default async function AuthLayout({ children }: LayoutProps<'/'>) {
+  await redirectAuthenticatedUserToHome();
   return <main className="min-h-screen bg-background">{children}</main>;
 }

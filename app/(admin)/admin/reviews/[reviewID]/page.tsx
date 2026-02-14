@@ -1,10 +1,31 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from '@tanstack/react-query';
 import { ApiError } from '@/configs/fetch';
 import { admin } from '@/lib/api/authorized/admin';
-import { adminEvidenceQueryKeys, AdminReviewDetailClient } from '@/features/authorized/admin';
+import {
+  adminEvidenceQueryKeys,
+  AdminReviewDetailClient,
+} from '@/features/authorized/admin';
 
-export default async function Page({ params }: PageProps<'/admin/reviews/[reviewID]'>) {
+// export async function generateMetadata({
+//   params,
+// }: PageProps<'/admin/reviews/[reviewID]'>): Promise<Metadata> {
+//   const { reviewID } = await params;
+//   const review = await admin.getEvidenceReviewById(reviewID);
+
+//   return {
+
+//   }
+// }
+
+export default async function Page({
+  params,
+}: PageProps<'/admin/reviews/[reviewID]'>) {
   const { reviewID } = await params;
   const queryClient = new QueryClient();
 

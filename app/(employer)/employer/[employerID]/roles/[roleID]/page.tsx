@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import {
   dehydrate,
   HydrationBoundary,
@@ -6,6 +7,25 @@ import {
 import { EmployerRoleDetailClient } from '@/features/authorized/employer/components';
 import { employerRolesQueryKeys } from '@/features/authorized/employer/hooks';
 import { employer } from '@/lib/api/authorized/employer';
+
+export async function generateMetadata({
+  params,
+}: PageProps<'/employer/[employerID]/roles/[roleID]'>): Promise<Metadata> {
+  const { roleID } = await params;
+  const role = await employer.getRoleById(roleID);
+
+  if (!role) {
+    return {
+      title: 'Role Not Found',
+      description: 'The specified role could not be found.',
+    };
+  }
+
+  return {
+    title: `Details for ${role.role.title} Role`,
+    description: `Detailed information about the role ${role.role.title}, including responsibilities, requirements, and associated job postings.`,
+  };
+}
 
 export default async function Page({
   params,

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import type { Route } from 'next';
 import { useRouter } from 'next/navigation';
 import { useState, useOptimistic, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -18,7 +19,7 @@ interface OptimisticState {
   type: 'success' | 'error' | 'idle' | 'loading';
 }
 
-function getPostLoginRoute(role: string, userId: string): string {
+function getPostLoginRoute(role: string, userId: string) {
   switch (role.toLowerCase()) {
     case 'admin':
       return '/admin';
@@ -26,8 +27,6 @@ function getPostLoginRoute(role: string, userId: string): string {
       return `/employer/${userId}/dashboard`;
     case 'user':
       return `/user/${userId}/dashboard`;
-    default:
-      return '/';
   }
 }
 
@@ -73,7 +72,9 @@ export function LoginForm() {
           message: 'Login successful! Redirecting...',
           type: 'success',
         });
-        router.push(getPostLoginRoute(response.user.role, response.user.id));
+        router.push(
+          getPostLoginRoute(response.user.role, response.user.id) as Route,
+        );
       } catch (error) {
         setOptimisticState({
           message: '',

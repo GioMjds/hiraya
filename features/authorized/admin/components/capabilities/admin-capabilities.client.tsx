@@ -2,6 +2,15 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,15 +21,24 @@ import {
   useArchiveAdminCapability,
   useCreateAdminCapability,
   useGetAdminCapabilities,
+  useUpdateAdminCapability,
 } from '@/features/authorized/admin/hooks';
+import type { AdminCapability } from '@/lib/api/authorized/admin';
+import { AdminWorkspaceHero } from '../shared/admin-workspace-hero';
 
 export function AdminCapabilitiesClient() {
   const [search, setSearch] = useState<string>('');
   const [name, setName] = useState<string>('');
   const [description, setDescription] = useState<string>('');
+  const [selectedCapability, setSelectedCapability] =
+    useState<AdminCapability | null>(null);
+  const [editName, setEditName] = useState<string>('');
+  const [editDescription, setEditDescription] = useState<string>('');
 
   const { data: capabilities, isLoading } = useGetAdminCapabilities();
   const { mutateAsync: createCapability, isPending: isCreating } = useCreateAdminCapability();
+  const { mutateAsync: updateCapability, isPending: isUpdating } =
+    useUpdateAdminCapability();
   const { mutateAsync: archiveCapability, isPending: isArchiving } = useArchiveAdminCapability();
 
   const filteredCapabilities = (capabilities ?? []).filter((capability) => {
@@ -42,21 +60,45 @@ export function AdminCapabilitiesClient() {
     setDescription('');
   };
 
+  const openEdit = (capability: AdminCapability) => {
+    setSelectedCapability(capability);
+    setEditName(capability.name);
+    setEditDescription(capability.description ?? '');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedCapability || !editName.trim()) return;
+    await updateCapability({
+      id: selectedCapability.id,
+      data: {
+        name: editName.trim(),
+        description: editDescription.trim() || undefined,
+      },
+    });
+    setSelectedCapability(null);
+  };
+
+  const totalCapabilities = capabilities?.length ?? 0;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Capabilities</h1>
-          <p className="text-sm text-muted-foreground">
-            Maintain capability definitions and their edges to skills.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+      <AdminWorkspaceHero
+        title="Capabilities"
+        description="Keep the capability graph consistent so matching and recommendations stay explainable."
+        actions={
           <Button variant="outline" asChild>
             <Link href="/admin">Back to dashboard</Link>
           </Button>
-        </div>
-      </div>
+        }
+        badges={[
+          { label: 'Total capabilities', value: totalCapabilities },
+          {
+            label: 'Filtered',
+            value: filteredCapabilities.length,
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="border-border/80 lg:col-span-2">
@@ -99,19 +141,28 @@ export function AdminCapabilitiesClient() {
                             {capability.description ?? 'No description'}
                           </div>
                         </div>
-                        <Badge variant="secondary" className="shrink-0">
+                       <Badge variant="secondary" className="shrink-0">
                           Active
                         </Badge>
                       </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full"
-                        disabled={isArchiving}
-                        onClick={async () => await archiveCapability(capability.id)}
-                      >
-                        Archive capability
-                      </Button>
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isUpdating}
+                          onClick={() => openEdit(capability)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isArchiving}
+                          onClick={async () => await archiveCapability(capability.id)}
+                        >
+                          Archive
+                        </Button>
+                      </div>
                     </CardContent>
                   </Card>
                 ))
@@ -142,6 +193,48 @@ export function AdminCapabilitiesClient() {
           </CardContent>
         </Card>
       </div>
+
+      <AlertDialog
+        open={Boolean(selectedCapability)}
+        onOpenChange={(open) => {
+          if (!open) setSelectedCapability(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit capability</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update capability metadata used by role requirement mapping.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="space-y-3">
+            <Input
+              placeholder="Capability name"
+              value={editName}
+              onChange={(event) => setEditName(event.target.value)}
+            />
+            <Input
+              placeholder="Description"
+              value={editDescription}
+              onChange={(event) => setEditDescription(event.target.value)}
+            />
+            <AlertDialogFooter>
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="outline" disabled={isUpdating}>
+                  Cancel
+                </Button>
+              </AlertDialogCancel>
+              <Button
+                type="button"
+                disabled={isUpdating || !editName.trim()}
+                onClick={handleSaveEdit}
+              >
+                {isUpdating ? 'Saving...' : 'Save'}
+              </Button>
+            </AlertDialogFooter>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

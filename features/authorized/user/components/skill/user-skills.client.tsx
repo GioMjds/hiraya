@@ -5,6 +5,15 @@ import { useMemo, useOptimistic, useState, useTransition } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { ApiError } from '@/configs/fetch';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +44,7 @@ import {
   useUpdateUserSkill,
 } from '@/features/authorized/user/hooks';
 import type { ProficiencyLevel } from '@/lib/api/authorized/user';
+import { UserWorkspaceHero } from '../shared/user-workspace-hero';
 
 interface UserSkillsClientProps {
   userId: string;
@@ -76,6 +86,8 @@ const toTitle = (value: string) =>
 export function UserSkillsClient({ userId }: UserSkillsClientProps) {
   const [search, setSearch] = useState<string>('');
   const [editingSkillId, setEditingSkillId] = useState<string | null>(null);
+  const [removingSkillId, setRemovingSkillId] = useState<string | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState<boolean>(false);
   const [optimisticState, setOptimisticState] = useOptimistic<
     OptimisticState,
     Partial<OptimisticState>
@@ -135,6 +147,7 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
     if (!userSkills) return [];
     const term = search.trim().toLowerCase();
     if (!term) return userSkills;
+
     return userSkills.filter((item) => {
       const name = item.skill?.name?.toLowerCase() ?? '';
       const level = item.level.toLowerCase();
@@ -145,6 +158,9 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
       );
     });
   }, [search, userSkills]);
+
+  const primarySkillsCount =
+    userSkills?.filter((item) => item.isPrimary).length ?? 0;
 
   const startEditing = (
     skillId: string,
@@ -181,7 +197,7 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
           confidence: 70,
           isPrimary: false,
         });
-
+        setIsAddDialogOpen(false);
         setOptimisticState({
           message: 'Skill added successfully.',
           type: 'success',
@@ -206,8 +222,7 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
 
         setAddError('root', {
           type: 'server',
-          message:
-            error instanceof Error ? error.message : 'Failed to add skill.',
+          message: error instanceof Error ? error.message : 'Failed to add skill.',
         });
       }
     });
@@ -256,48 +271,49 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
   const handleRemove = async (userSkillId: string) => {
     try {
       await removeUserSkill(userSkillId);
+      setRemovingSkillId(null);
       if (editingSkillId === userSkillId) {
         setEditingSkillId(null);
       }
     } catch (error) {
       setAddError('root', {
         type: 'server',
-        message:
-          error instanceof Error ? error.message : 'Failed to remove skill.',
+        message: error instanceof Error ? error.message : 'Failed to remove skill.',
       });
     }
   };
 
+  const selectedRemovingSkill =
+    (userSkills ?? []).find((item) => item.id === removingSkillId) ?? null;
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Skills</h1>
-          <p className="text-sm text-muted-foreground">
-            Declared skills and confidence levels.
-          </p>
-        </div>
-      </div>
+      <UserWorkspaceHero
+        title="Skills"
+        description="Declare your current skills and confidence levels to improve matching quality."
+        actions={
+          <>
+            <Button variant="outline" asChild>
+              <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
+            </Button>
+            <Button
+              onClick={() => setIsAddDialogOpen(true)}
+              disabled={selectableSkills.length === 0}
+            >
+              Add skill
+            </Button>
+          </>
+        }
+        badges={[
+          { label: 'Declared', value: userSkills?.length ?? 0 },
+          { label: 'Primary', value: primarySkillsCount, variant: 'outline' },
+          { label: 'Available', value: selectableSkills.length, variant: 'outline' },
+        ]}
+      />
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-3 flex-wrap">
-            <CardTitle className="text-base">Add a skill</CardTitle>
-            <Sparkles className="h-5 w-5 text-muted-foreground" />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <form
-            onSubmit={handleAddSubmit(onSubmitAddSkill)}
-            className="space-y-4"
-          >
-            {optimisticState.type === 'loading' && (
-              <Alert className="border-blue-200 bg-blue-50">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                <AlertDescription>{optimisticState.message}</AlertDescription>
-              </Alert>
-            )}
-
+      {(addErrors.root || editErrors.root || optimisticState.type === 'success') && (
+        <Card>
+          <CardContent className="pt-6">
             {optimisticState.type === 'success' && (
               <Alert className="border-green-200 bg-green-50">
                 <AlertDescription className="text-green-800">
@@ -305,7 +321,6 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
                 </AlertDescription>
               </Alert>
             )}
-
             {(addErrors.root || editErrors.root) && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
@@ -314,134 +329,9 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
                 </AlertDescription>
               </Alert>
             )}
-
-            <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Skill</Label>
-                <Controller
-                  name="skillId"
-                  control={addControl}
-                  rules={{ required: 'Please select a skill to add.' }}
-                  render={({ field }) => (
-                    <Select value={field.value} onValueChange={field.onChange}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select skill" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {selectableSkills.map((skill) => (
-                          <SelectItem key={skill.id} value={skill.id}>
-                            {skill.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-                {addErrors.skillId && (
-                  <p className="text-sm text-destructive">
-                    {addErrors.skillId.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Level</Label>
-                <Controller
-                  name="level"
-                  control={addControl}
-                  render={({ field }) => (
-                    <Select
-                      value={field.value}
-                      onValueChange={(value) =>
-                        field.onChange(value as ProficiencyLevel)
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {LEVEL_OPTIONS.map((level) => (
-                          <SelectItem key={level} value={level}>
-                            {toTitle(level)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Confidence (0-100)
-                </Label>
-                <Input
-                  type="number"
-                  min={0}
-                  max={100}
-                  disabled={isAddSubmitting || isPending || isAdding}
-                  {...addRegister('confidence', {
-                    valueAsNumber: true,
-                    required: 'Confidence is required',
-                    min: { value: 0, message: 'Confidence must be at least 0' },
-                    max: {
-                      value: 100,
-                      message: 'Confidence must be at most 100',
-                    },
-                  })}
-                />
-                {addErrors.confidence && (
-                  <p className="text-sm text-destructive">
-                    {addErrors.confidence.message}
-                  </p>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Primary skill</Label>
-                <div className="flex h-10 items-center rounded-md border px-3">
-                  <Controller
-                    name="isPrimary"
-                    control={addControl}
-                    render={({ field }) => (
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <Button
-                type="submit"
-                disabled={
-                  isAddSubmitting ||
-                  isPending ||
-                  isAdding ||
-                  selectableSkills.length === 0
-                }
-              >
-                {isPending || isAdding ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Adding...
-                  </>
-                ) : (
-                  'Add skill'
-                )}
-              </Button>
-              {selectableSkills.length === 0 && (
-                <div className="text-sm text-muted-foreground">
-                  All available skills are already added.
-                </div>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-3">
@@ -475,135 +365,40 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
                   className="flex flex-col gap-2 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <div className="font-medium">
-                      {item.skill?.name ?? item.skillId}
-                    </div>
+                    <div className="font-medium">{item.skill?.name ?? item.skillId}</div>
                     <div className="text-xs text-muted-foreground">
                       Confidence: {item.confidence}%
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    {editingSkillId === item.id ? (
-                      <form
-                        onSubmit={handleEditSubmit(onSubmitEditSkill)}
-                        className="flex items-center gap-2 flex-wrap"
-                      >
-                        <Controller
-                          name="level"
-                          control={editControl}
-                          render={({ field }) => (
-                            <Select
-                              value={field.value}
-                              onValueChange={(value) =>
-                                field.onChange(value as ProficiencyLevel)
-                              }
-                            >
-                              <SelectTrigger className="w-38.75">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {LEVEL_OPTIONS.map((level) => (
-                                  <SelectItem key={level} value={level}>
-                                    {toTitle(level)}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          )}
-                        />
-                        <Input
-                          className="w-27.5"
-                          type="number"
-                          min={0}
-                          max={100}
-                          disabled={isEditSubmitting || isPending || isUpdating}
-                          {...editRegister('confidence', {
-                            valueAsNumber: true,
-                            required: 'Confidence is required',
-                            min: {
-                              value: 0,
-                              message: 'Confidence must be at least 0',
-                            },
-                            max: {
-                              value: 100,
-                              message: 'Confidence must be at most 100',
-                            },
-                          })}
-                        />
-                        <div className="flex items-center gap-2 rounded-md border px-2 h-10">
-                          <div className="text-xs text-muted-foreground">
-                            Primary
-                          </div>
-                          <Controller
-                            name="isPrimary"
-                            control={editControl}
-                            render={({ field }) => (
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
-                            )}
-                          />
-                        </div>
-                        <Button
-                          size="sm"
-                          type="submit"
-                          disabled={isEditSubmitting || isPending || isUpdating}
-                        >
-                          {isPending || isUpdating ? 'Saving...' : 'Save'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          type="button"
-                          variant="outline"
-                          onClick={() => setEditingSkillId(null)}
-                        >
-                          Cancel
-                        </Button>
-                      </form>
-                    ) : (
-                      <>
-                        <Badge
-                          variant="secondary"
-                          className="text-xs uppercase"
-                        >
-                          {toTitle(item.level)}
-                        </Badge>
-                        {item.isPrimary && (
-                          <Badge variant="outline">Primary</Badge>
-                        )}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() =>
-                            startEditing(
-                              item.id,
-                              item.level,
-                              item.confidence,
-                              item.isPrimary,
-                            )
-                          }
-                        >
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => void handleRemove(item.id)}
-                          disabled={isRemoving}
-                        >
-                          <Trash2 className="mr-1 h-4 w-4" />
-                          Remove
-                        </Button>
-                        <Button variant="outline" size="sm" asChild>
-                          <Link href={`/user/${userId}/skills/${item.id}`}>
-                            Open
-                            <ArrowRight className="ml-1 h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </>
-                    )}
+                    <Badge variant="secondary" className="text-xs uppercase">
+                      {toTitle(item.level)}
+                    </Badge>
+                    {item.isPrimary && <Badge variant="outline">Primary</Badge>}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        startEditing(item.id, item.level, item.confidence, item.isPrimary)
+                      }
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setRemovingSkillId(item.id)}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Remove
+                    </Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link href={`/user/${userId}/skills/${item.id}`}>
+                        Open
+                        <ArrowRight className="ml-1 h-4 w-4" />
+                      </Link>
+                    </Button>
                   </div>
                 </div>
               ))
@@ -615,6 +410,281 @@ export function UserSkillsClient({ userId }: UserSkillsClientProps) {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Add a skill
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Add a new declared skill with level and confidence.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleAddSubmit(onSubmitAddSkill)} className="space-y-3">
+            {optimisticState.type === 'loading' && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <AlertDescription>{optimisticState.message}</AlertDescription>
+              </Alert>
+            )}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Skill</Label>
+              <Controller
+                name="skillId"
+                control={addControl}
+                rules={{ required: 'Please select a skill to add.' }}
+                render={({ field }) => (
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select skill" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {selectableSkills.map((skill) => (
+                        <SelectItem key={skill.id} value={skill.id}>
+                          {skill.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {addErrors.skillId && (
+                <p className="text-sm text-destructive">{addErrors.skillId.message}</p>
+              )}
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Level</Label>
+                <Controller
+                  name="level"
+                  control={addControl}
+                  render={({ field }) => (
+                    <Select
+                      value={field.value}
+                      onValueChange={(value) =>
+                        field.onChange(value as ProficiencyLevel)
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select level" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LEVEL_OPTIONS.map((level) => (
+                          <SelectItem key={level} value={level}>
+                            {toTitle(level)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Confidence (0-100)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  disabled={isAddSubmitting || isPending || isAdding}
+                  {...addRegister('confidence', {
+                    valueAsNumber: true,
+                    required: 'Confidence is required',
+                    min: { value: 0, message: 'Confidence must be at least 0' },
+                    max: { value: 100, message: 'Confidence must be at most 100' },
+                  })}
+                />
+                {addErrors.confidence && (
+                  <p className="text-sm text-destructive">
+                    {addErrors.confidence.message}
+                  </p>
+                )}
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Primary skill</Label>
+              <div className="flex h-10 items-center rounded-md border px-3">
+                <Controller
+                  name="isPrimary"
+                  control={addControl}
+                  render={({ field }) => (
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  )}
+                />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="outline" disabled={isAddSubmitting || isPending || isAdding}>
+                  Cancel
+                </Button>
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                disabled={
+                  isAddSubmitting ||
+                  isPending ||
+                  isAdding ||
+                  selectableSkills.length === 0
+                }
+              >
+                {isPending || isAdding ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  'Add skill'
+                )}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={Boolean(editingSkillId)}
+        onOpenChange={(open) => {
+          if (!open) setEditingSkillId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Edit skill</AlertDialogTitle>
+            <AlertDialogDescription>
+              Update the selected skill level, confidence, and primary flag.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleEditSubmit(onSubmitEditSkill)} className="space-y-3">
+            {optimisticState.type === 'loading' && (
+              <Alert className="border-blue-200 bg-blue-50">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <AlertDescription>{optimisticState.message}</AlertDescription>
+              </Alert>
+            )}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Level</Label>
+              <Controller
+                name="level"
+                control={editControl}
+                render={({ field }) => (
+                  <Select
+                    value={field.value}
+                    onValueChange={(value) => field.onChange(value as ProficiencyLevel)}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LEVEL_OPTIONS.map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {toTitle(level)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Confidence (0-100)</Label>
+              <Input
+                type="number"
+                min={0}
+                max={100}
+                disabled={isEditSubmitting || isPending || isUpdating}
+                {...editRegister('confidence', {
+                  valueAsNumber: true,
+                  required: 'Confidence is required',
+                  min: {
+                    value: 0,
+                    message: 'Confidence must be at least 0',
+                  },
+                  max: {
+                    value: 100,
+                    message: 'Confidence must be at most 100',
+                  },
+                })}
+              />
+              {editErrors.confidence && (
+                <p className="text-sm text-destructive">{editErrors.confidence.message}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Primary skill</Label>
+              <div className="flex h-10 items-center rounded-md border px-3">
+                <Controller
+                  name="isPrimary"
+                  control={editControl}
+                  render={({ field }) => (
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  )}
+                />
+              </div>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel asChild>
+                <Button type="button" variant="outline" disabled={isEditSubmitting || isPending || isUpdating}>
+                  Cancel
+                </Button>
+              </AlertDialogCancel>
+              <Button type="submit" disabled={isEditSubmitting || isPending || isUpdating}>
+                {isPending || isUpdating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : (
+                  'Save changes'
+                )}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog
+        open={Boolean(removingSkillId)}
+        onOpenChange={(open) => {
+          if (!open) setRemovingSkillId(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this skill?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action removes the skill from your profile.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="text-sm text-muted-foreground">
+            This will remove{' '}
+            <span className="font-medium text-foreground">
+              {selectedRemovingSkill?.skill?.name ?? 'this skill'}
+            </span>{' '}
+            from your profile.
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel asChild>
+              <Button type="button" variant="outline" disabled={isRemoving}>
+                Cancel
+              </Button>
+            </AlertDialogCancel>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={isRemoving}
+              onClick={() => {
+                if (removingSkillId) {
+                  void handleRemove(removingSkillId);
+                }
+              }}
+            >
+              {isRemoving ? 'Removing...' : 'Remove skill'}
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

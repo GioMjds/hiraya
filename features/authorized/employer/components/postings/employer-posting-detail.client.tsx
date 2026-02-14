@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { useGetEmployerPostingById } from '@/features/authorized/employer/hooks';
 import { CheckCircle2, Target } from 'lucide-react';
+import { EmployerWorkspaceHero } from '../shared/employer-workspace-hero';
 
 interface EmployerPostingDetailClientProps {
   employerId: string;
@@ -21,17 +22,23 @@ export function EmployerPostingDetailClient({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Posting detail</h1>
-          <p className="text-sm text-muted-foreground">
-            View posting status and candidate pipeline.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <Link href={`/employer/${employerId}/postings`}>Back to postings</Link>
-        </Button>
-      </div>
+      <EmployerWorkspaceHero
+        title="Posting detail"
+        description="Track posting health and keep candidate pipeline context easy to review."
+        actions={
+          <Button variant="outline" asChild>
+            <Link href={`/employer/${employerId}/postings`}>Back to postings</Link>
+          </Button>
+        }
+        badges={[
+          { label: 'Posting ID', value: postingId },
+          {
+            label: 'Status',
+            value: posting?.status?.toUpperCase() ?? 'DRAFT',
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">

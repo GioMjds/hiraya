@@ -100,7 +100,7 @@ export function AuthorizedProfile() {
             onClick={() => logoutMutation.mutate()}
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Log out
+            Log Out
           </Button>
         </div>
       </PopoverContent>

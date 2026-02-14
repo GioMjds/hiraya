@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ArrowRight, Lightbulb } from 'lucide-react';
 import { useGetUserRecommendations } from '@/features/authorized/user/hooks';
+import { UserWorkspaceHero } from '../shared/user-workspace-hero';
 
 interface UserRecommendationsClientProps {
   userId: string;
@@ -16,20 +17,28 @@ export function UserRecommendationsClient({
   userId,
 }: UserRecommendationsClientProps) {
   const { data, isLoading } = useGetUserRecommendations();
+  const suggestedRolesCount = data?.topRoleMatches?.length ?? 0;
+  const learningRecommendationsCount = data?.learningRecommendations?.length ?? 0;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Recommendations</h1>
-          <p className="text-sm text-muted-foreground">
-            Suggested roles and learning actions from your capability graph.
-          </p>
-        </div>
-        <Button variant="outline" asChild>
-          <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
-        </Button>
-      </div>
+      <UserWorkspaceHero
+        title="Recommendations"
+        description="Explore suggested roles and learning actions generated from your capability graph."
+        actions={
+          <Button variant="outline" asChild>
+            <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
+          </Button>
+        }
+        badges={[
+          { label: 'Role suggestions', value: suggestedRolesCount },
+          {
+            label: 'Learning actions',
+            value: learningRecommendationsCount,
+            variant: 'outline',
+          },
+        ]}
+      />
 
       <Card>
         <CardHeader className="pb-3">
