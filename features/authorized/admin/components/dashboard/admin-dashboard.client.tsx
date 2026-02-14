@@ -32,6 +32,9 @@ export function AdminDashboardClient() {
     useGetAdminEvidenceQueue();
 
   const pendingReviews = reviews?.length ?? 0;
+  const researchMetrics = dashboard?.researchMetrics;
+  const topAlgorithm = researchMetrics?.algorithmVersionDistribution[0];
+  const topGap = researchMetrics?.topGapCapabilities[0];
   const overview = [
     {
       title: 'Pending Reviews',
@@ -55,9 +58,9 @@ export function AdminDashboardClient() {
       href: '/admin/capabilities',
     },
     {
-      title: 'Audit Events',
-      value: dashboard?.recentAuditLogs.length ?? 0,
-      hint: 'Recent system actions',
+      title: 'Match Samples',
+      value: researchMetrics?.totalMatchResults ?? 0,
+      hint: 'Stored matching outcomes',
       icon: ShieldCheck,
       href: '/admin/audit',
     },
@@ -175,6 +178,31 @@ export function AdminDashboardClient() {
                     <Link href={item.href as Route}>{item.title}</Link>
                   </Button>
                 ))}
+              </div>
+            </div>
+            <Separator />
+            <div className="space-y-1 text-xs text-muted-foreground">
+              <div>
+                Avg match score:{' '}
+                <span className="font-medium text-foreground">
+                  {researchMetrics?.averageMatchScore ?? 0}%
+                </span>
+              </div>
+              <div>
+                Top algorithm:{' '}
+                <span className="font-medium text-foreground">
+                  {topAlgorithm
+                    ? `${topAlgorithm.version} (${topAlgorithm.count})`
+                    : 'N/A'}
+                </span>
+              </div>
+              <div>
+                Highest gap:{' '}
+                <span className="font-medium text-foreground">
+                  {topGap
+                    ? `${topGap.capabilityName} (${topGap.count})`
+                    : 'N/A'}
+                </span>
               </div>
             </div>
           </CardContent>

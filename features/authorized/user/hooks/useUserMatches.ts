@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { user } from '@/lib/api/authorized/user';
+import { match } from '@/lib/api/match';
 import type { ComputeUserMatchesData } from '@/lib/api/authorized/user';
 
 export const userMatchQueryKeys = {
@@ -7,6 +8,7 @@ export const userMatchQueryKeys = {
 	list: () => [...userMatchQueryKeys.all, 'list'],
 	detail: (matchId: string) => [...userMatchQueryKeys.all, 'detail', matchId],
 	recommendations: () => ['authorized-user', 'recommendations'],
+	health: () => ['match', 'health'],
 };
 
 export function useGetUserMatches() {
@@ -48,6 +50,15 @@ export function useGetUserRecommendations() {
 	return useQuery({
 		queryKey: userMatchQueryKeys.recommendations(),
 		queryFn: async () => await user.getUserRecommendations(),
+		refetchOnMount: true,
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useGetMatchHealth() {
+	return useQuery({
+		queryKey: userMatchQueryKeys.health(),
+		queryFn: async () => await match.getHealth(),
 		refetchOnMount: true,
 		refetchOnWindowFocus: false,
 	});

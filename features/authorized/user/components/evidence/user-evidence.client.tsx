@@ -112,7 +112,7 @@ export function UserEvidenceClient({ userId }: UserEvidenceClientProps) {
 
   const totalEvidence = userEvidence?.length ?? 0;
   const linkedEvidence =
-    userEvidence?.filter((item) => (item.skills?.length ?? 0) > 0).length ?? 0;
+    userEvidence?.filter((item) => (item.skillLinks?.length ?? 0) > 0).length ?? 0;
   const readiness = totalEvidence > 0 ? 'Ready' : 'Needs evidence';
 
   const filteredEvidence = useMemo(() => {

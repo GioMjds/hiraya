@@ -18,6 +18,19 @@ interface OptimisticState {
   type: 'success' | 'error' | 'idle' | 'loading';
 }
 
+function getPostLoginRoute(role: string, userId: string): string {
+  switch (role.toLowerCase()) {
+    case 'admin':
+      return '/admin';
+    case 'employer':
+      return `/employer/${userId}/dashboard`;
+    case 'user':
+      return `/user/${userId}/dashboard`;
+    default:
+      return '/';
+  }
+}
+
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
@@ -55,12 +68,12 @@ export function LoginForm() {
       });
 
       try {
-        await auth.login(data);
+        const response = await auth.login(data);
         setOptimisticState({
           message: 'Login successful! Redirecting...',
           type: 'success',
         });
-        router.push('/admin');
+        router.push(getPostLoginRoute(response.user.role, response.user.id));
       } catch (error) {
         setOptimisticState({
           message: '',

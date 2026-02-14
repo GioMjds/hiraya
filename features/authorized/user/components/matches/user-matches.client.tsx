@@ -11,9 +11,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, ArrowRight, Loader2, Target } from 'lucide-react';
+import { AlertCircle, ArrowRight, Loader2, ShieldCheck, Target } from 'lucide-react';
 import {
   useComputeUserMatches,
+  useGetMatchHealth,
   useGetUserMatches,
 } from '@/features/authorized/user/hooks';
 
@@ -49,12 +50,13 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
   } = useForm<ComputeMatchesFormValues>({
     mode: 'onSubmit',
     defaultValues: {
-      algorithmVersion: 'v1.0.0',
+      algorithmVersion: 'internal-v2.0.0',
       roleIdsRaw: '',
     },
   });
 
   const { data: userMatches, isLoading } = useGetUserMatches();
+  const { data: matchHealth } = useGetMatchHealth();
   const { mutateAsync: computeMatches, isPending } = useComputeUserMatches();
 
   const onSubmit = async (values: ComputeMatchesFormValues) => {
@@ -151,12 +153,25 @@ export function UserMatchesClient({ userId }: UserMatchesClientProps) {
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Algorithm version</Label>
                 <Input
-                  placeholder="v1.0.0"
+                  placeholder="internal-v2.0.0"
                   disabled={isSubmitting || isPending || isTransitionPending}
                   {...register('algorithmVersion')}
                 />
               </div>
             </div>
+
+            {matchHealth && (
+              <div className="rounded-lg border p-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>
+                    Canonical source: {matchHealth.canonical_source ?? 'api-internal'} ·
+                    Engine: {matchHealth.matching_source ?? 'networkx-engine'} ·
+                    Engine algo: {matchHealth.algorithm_version ?? 'engine-v2.0.0'}
+                  </span>
+                </div>
+              </div>
+            )}
 
             <div className="flex items-center gap-2">
               <Button type="submit" disabled={isSubmitting || isPending || isTransitionPending}>

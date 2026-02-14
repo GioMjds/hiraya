@@ -15,7 +15,27 @@ export interface AdminDashboardResponse {
 	skillsCount: number;
 	capabilitiesCount: number;
 	recentAuditLogs: AdminAuditLog[];
+	researchMetrics: AdminResearchMetrics;
 	timestamp: IsoDateString;
+}
+
+export interface AdminResearchMetrics {
+	totalMatchResults: number;
+	averageMatchScore: number;
+	algorithmVersionDistribution: Array<{
+		version: string;
+		count: number;
+	}>;
+	topGapCapabilities: Array<{
+		capabilityId: string;
+		capabilityName: string;
+		count: number;
+	}>;
+	reviewQueue: {
+		pending: number;
+		approved: number;
+		rejected: number;
+	};
 }
 
 export interface AdminSkill {
