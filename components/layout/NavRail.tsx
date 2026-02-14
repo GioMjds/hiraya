@@ -16,6 +16,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import type { Roles } from '@/utils/sidebar';
+import { ROLE_UI_CONFIG } from './authorized/role-ui-config';
 
 interface NavItemBase {
   id: string;
@@ -27,13 +29,15 @@ interface NavItemBase {
 
 interface NavRailProps {
   items: readonly NavItemBase[];
+  role: Roles;
 }
 
-export function NavRail({ items }: NavRailProps) {
+export function NavRail({ items, role }: NavRailProps) {
   const pathname = usePathname();
   const { isCollapsed } = useNavRailStore();
   const [mounted, setMounted] = useState<boolean>(false);
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const roleConfig = ROLE_UI_CONFIG[role];
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setMounted(true));
@@ -118,8 +122,8 @@ export function NavRail({ items }: NavRailProps) {
         className={cn(
           'w-full justify-start transition-all duration-200',
           isActive || parentIsActive
-            ? 'bg-white shadow-sm dark:bg-zinc-800 font-semibold text-primary'
-            : 'text-muted-foreground hover:text-foreground',
+            ? roleConfig.navItemActiveClassName
+            : roleConfig.navItemInactiveClassName,
         )}
         onClick={hasChildren ? () => toggleExpanded(item.id) : undefined}
       >
@@ -196,6 +200,11 @@ export function NavRail({ items }: NavRailProps) {
     >
       <ScrollArea className="flex-1 px-3 py-4">
         <TooltipProvider delayDuration={0}>
+          {!active && (
+            <div className="mb-3 px-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              {roleConfig.railTitle}
+            </div>
+          )}
           <div className="space-y-1">
             {items.map((item) => renderNavItem(item))}
           </div>

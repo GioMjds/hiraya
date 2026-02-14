@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { CheckCircle2, Gauge, Target } from 'lucide-react';
 
 export default async function Page({
   params,
@@ -71,9 +72,17 @@ export default async function Page({
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Actions</CardTitle>
+            <CardTitle className="text-base">Role controls</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-2">
+          <CardContent className="space-y-3">
+            <div className="rounded-lg border p-3 flex items-center justify-between">
+              <div className="text-sm text-muted-foreground">Role state</div>
+              <Badge variant="secondary">PUBLISHED</Badge>
+            </div>
+            <div className="rounded-lg border p-3 text-sm text-muted-foreground flex items-center gap-2">
+              <Gauge className="h-4 w-4" />
+              Keep requirements specific to improve quality of candidate matching.
+            </div>
             <Button variant="outline" className="w-full">Edit requirements</Button>
             <Button variant="outline" className="w-full">Publish / Archive</Button>
             <Separator />
@@ -85,6 +94,14 @@ export default async function Page({
               <Button size="sm" className="mt-3 w-full" asChild>
                 <Link href={`/employer/${employerID}/postings/new`}>New posting</Link>
               </Button>
+            </div>
+            <div className="rounded-lg border p-3 text-sm text-muted-foreground flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Role-match alignment should be reviewed before publishing updates.
+            </div>
+            <div className="rounded-lg border p-3 text-sm text-muted-foreground flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              Use consistent capability weighting across similar roles.
             </div>
           </CardContent>
         </Card>

@@ -11,7 +11,7 @@ export default function NotFound() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            The evidence item you tried to open doesn’t exist or is no longer available.
+            The evidence item you tried to open does not exist or is no longer available.
           </div>
           <Button asChild className="w-full">
             <Link href="/admin/evidence">Back to evidence queue</Link>

@@ -8,12 +8,22 @@ import type {
 export const userSkillQueryKeys = {
 	all: ['authorized-user', 'skills'],
 	list: () => [...userSkillQueryKeys.all, 'list'],
+	options: () => [...userSkillQueryKeys.all, 'options'],
 };
 
 export function useGetUserSkills() {
 	return useQuery({
 		queryKey: userSkillQueryKeys.list(),
 		queryFn: async () => await user.getUserSkills(),
+		refetchOnMount: true,
+		refetchOnWindowFocus: false,
+	});
+}
+
+export function useGetUserSkillOptions() {
+	return useQuery({
+		queryKey: userSkillQueryKeys.options(),
+		queryFn: async () => await user.getUserSkillOptions(),
 		refetchOnMount: true,
 		refetchOnWindowFocus: false,
 	});

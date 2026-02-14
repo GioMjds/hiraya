@@ -25,7 +25,7 @@ export const ROLE_NAV_ITEMS: Record<string, NavItem[]> = {
     {
       id: 'dashboard',
       label: 'Dashboard',
-      href: '/',
+      href: '',
       icon: 'Home',
     },
     {

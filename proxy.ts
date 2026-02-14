@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-export function proxy(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const token = req.cookies.get('access_token')?.value;
   const { pathname, searchParams } = req.nextUrl;
 
-  // if (pathname === '/verify') {
-  //   const verificationToken = searchParams.get('email');
-  //   if (!verificationToken) {
-  //     return NextResponse.redirect(new URL('/login', req.url));
-  //   }
-  // }
+  if (pathname === '/verify') {
+    const verificationToken = searchParams.get('email');
+    if (!verificationToken) {
+      return NextResponse.redirect(new URL('/login', req.url));
+    }
+  }
 
   const isAuthPage =
     pathname.startsWith('/login') ||
@@ -22,6 +22,10 @@ export function proxy(req: NextRequest) {
     }
     return NextResponse.next();
   }
+
+  // if (!token) {
+  //   return NextResponse.redirect(new URL('/login', req.url));
+  // }
 }
 
 export const config = {

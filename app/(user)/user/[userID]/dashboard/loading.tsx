@@ -1,3 +1,23 @@
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+
 export default function Loading() {
-  return <div>Loading...</div>;
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Loading dashboard...</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Skeleton className="h-8 w-48" />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
 }

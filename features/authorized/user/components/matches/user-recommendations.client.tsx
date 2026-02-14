@@ -27,7 +27,7 @@ export function UserRecommendationsClient({
           </p>
         </div>
         <Button variant="outline" asChild>
-          <Link href={`/user/${userId}/dashboard`}>Back</Link>
+          <Link href={`/user/${userId}/dashboard`}>Back to dashboard</Link>
         </Button>
       </div>
 
@@ -54,7 +54,7 @@ export function UserRecommendationsClient({
                         Match score: {Math.round(rec.match.score)}%
                       </div>
                     </div>
-                    <Badge variant="secondary">Suggested</Badge>
+                    <Badge variant="secondary">Suggested role</Badge>
                   </div>
                   <Separator />
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -72,10 +72,55 @@ export function UserRecommendationsClient({
               ))
             ) : (
               <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-                No recommendations available yet.
+                No role recommendations yet.
               </div>
             )}
           </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Learning recommendations</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoading ? (
+            <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+              Loading learning recommendations...
+            </div>
+          ) : data?.learningRecommendations && data.learningRecommendations.length > 0 ? (
+            <div className="grid gap-3">
+              {data.learningRecommendations.map((item, index) => (
+                <div key={`${item.capabilityId ?? 'cap'}-${index}`} className="rounded-lg border p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+                    <div>
+                      <div className="font-medium">{item.capabilityName ?? item.capabilityId ?? 'Unknown capability'}</div>
+                      <div className="text-sm text-muted-foreground">
+                        Required: {item.requiredLevel} • Current: {item.currentLevel ?? 'none'}
+                      </div>
+                    </div>
+                    <Badge variant="outline">Gap {Math.round(item.gapScore)}%</Badge>
+                  </div>
+                  <Separator />
+                  {item.relatedUserSkills.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {item.relatedUserSkills.map((skill) => (
+                        <Badge key={skill.userSkillId} variant="secondary">
+                          {skill.skillId} • {skill.level}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground">No directly related current user skills.</div>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-lg border p-6 text-sm text-muted-foreground">
+              No learning recommendations yet.
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

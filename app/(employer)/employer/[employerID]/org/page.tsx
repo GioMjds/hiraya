@@ -21,7 +21,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href={`/employer/${employerID}/dashboard`}>Back</Link>
+            <Link href={`/employer/${employerID}/dashboard`}>Back to dashboard</Link>
           </Button>
           <Button asChild>
             <Link href={`/employer/${employerID}/org/members`}>
@@ -33,7 +33,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="border-border/80 lg:col-span-2">
           <CardHeader>
             <CardTitle className="text-base">Org profile</CardTitle>
           </CardHeader>
@@ -53,7 +53,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
               <Input id="website" placeholder="https://" />
             </div>
             <Separator />
-            <div className="rounded-lg border p-4">
+            <div className="rounded-lg border border-border/80 p-4">
               <div className="flex items-center justify-between gap-3 flex-wrap">
                 <div>
                   <div className="font-medium">Public profile preview</div>
@@ -70,7 +70,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-border/80">
           <CardHeader>
             <CardTitle className="text-base">Metadata</CardTitle>
           </CardHeader>
@@ -84,7 +84,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
               <div className="text-sm text-muted-foreground">Employer ID</div>
               <div className="font-mono text-sm">{employerID}</div>
             </div>
-            <div className="rounded-lg border p-4">
+            <div className="rounded-lg border border-border/80 p-4">
               <div className="flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-muted-foreground" />
                 <div className="text-sm font-medium">Governance</div>

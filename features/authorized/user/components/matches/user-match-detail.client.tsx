@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Sparkles, Target } from 'lucide-react';
 import { useGetUserMatchById } from '@/features/authorized/user/hooks';
 
 interface UserMatchDetailClientProps {
@@ -17,7 +17,9 @@ export function UserMatchDetailClient({
   userId,
   matchId,
 }: UserMatchDetailClientProps) {
-  const { data } = useGetUserMatchById(matchId);
+  const { data, isLoading } = useGetUserMatchById(matchId);
+  const score = Math.round(data?.score ?? 0);
+  const gapCount = data?.gaps?.length ?? 0;
 
   return (
     <div className="space-y-6">
@@ -42,6 +44,12 @@ export function UserMatchDetailClient({
             <CardTitle className="text-base">Fit explanation</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
+            {isLoading ? (
+              <div className="rounded-lg border p-4 text-sm text-muted-foreground">
+                Loading match details...
+              </div>
+            ) : (
+              <>
             <div className="rounded-lg border p-4">
               <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div>
@@ -50,7 +58,16 @@ export function UserMatchDetailClient({
                     {data?.role?.title ?? 'Role data unavailable'}
                   </div>
                 </div>
-                <Badge variant="outline">{Math.round(data?.score ?? 0)}%</Badge>
+                <Badge variant="outline">{score}%</Badge>
+              </div>
+              <div className="mt-4 space-y-1">
+                <div className="h-2 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary"
+                    style={{ width: `${Math.max(0, Math.min(score, 100))}%` }}
+                  />
+                </div>
+                <div className="text-xs text-muted-foreground">Match confidence: {score}%</div>
               </div>
               <Separator className="my-4" />
               <div className="text-sm text-muted-foreground">
@@ -61,21 +78,46 @@ export function UserMatchDetailClient({
             <div className="rounded-lg border p-4 text-sm text-muted-foreground">
               Algorithm version: {data?.algorithmVersion ?? 'N/A'}
             </div>
+
+            <div className="rounded-lg border p-4 space-y-2">
+              <div className="text-sm font-medium flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Suggested next action
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Review your top capability gaps and strengthen the highest-impact missing area first.
+              </div>
+              <Button size="sm" variant="outline" asChild>
+                <Link href={`/user/${userId}/recommendations`}>
+                  Open recommendations
+                  <ArrowRight className="ml-1 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Skill gaps</CardTitle>
+            <CardTitle className="text-base flex items-center gap-2">
+              <Target className="h-4 w-4" />
+              Skill gaps
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
+            <div className="flex items-center justify-between rounded-lg border p-3 text-sm">
+              <div className="text-muted-foreground">Gap count</div>
+              <Badge variant="outline">{gapCount}</Badge>
+            </div>
             {data?.gaps && data.gaps.length > 0 ? (
               data.gaps.map((gap) => (
                 <div key={gap.id} className="rounded-lg border p-3 text-sm">
-                  <div className="font-medium">Capability: {gap.capabilityId ?? 'N/A'}</div>
-                  <div className="text-muted-foreground">
+                  <h1 className="text-muted-foreground">
                     Required: {gap.requiredLevel} • Current: {gap.currentLevel ?? 'none'}
-                  </div>
+                  </h1>
+                  <div className="text-muted-foreground">Gap score: {Math.round(gap.gapScore)}%</div>
                 </div>
               ))
             ) : (

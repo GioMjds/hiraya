@@ -25,15 +25,15 @@ export default async function Page({
           </p>
         </div>
         <Button variant="outline" asChild>
-          <Link href={`/employer/${employerID}/dashboard`}>Back</Link>
+          <Link href={`/employer/${employerID}/dashboard`}>Back to dashboard</Link>
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-border/80">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <CardTitle className="text-base">Roles</CardTitle>
-            <Target className="h-5 w-5 text-muted-foreground" />
+            <Target className="h-4 w-4 text-muted-foreground" />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -46,14 +46,14 @@ export default async function Page({
 
           <div className="grid gap-3">
             {roles.length === 0 ? (
-              <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-                No roles available yet.
+              <div className="rounded-lg border border-border/80 p-6 text-sm text-muted-foreground">
+                No match-ready roles yet.
               </div>
             ) : (
               roles.map((role) => (
                 <div
                   key={role.id}
-                  className="rounded-lg border p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                  className="rounded-lg border border-border/80 p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="space-y-1">
                     <div className="font-medium">{role.title}</div>
@@ -67,7 +67,7 @@ export default async function Page({
                     </Badge>
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/employer/${employerID}/matches/${role.id}`}>
-                        View
+                        Open
                         <ArrowRight className="ml-1 h-4 w-4" />
                       </Link>
                     </Button>

@@ -30,7 +30,7 @@ export type OnboardingGoal =
 	| 'VIEW_CANDIDATE_MATCHES'
 	| 'MANAGE_ORGANIZATION';
 
-export type RoleStatus = 'draft' | 'published' | 'archived';
+export type RoleStatus = 'DRAFT' | 'PUBLISHED' | 'ARCHIVED';
 
 export interface UserDashboardResponse {
 	user: {

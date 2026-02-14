@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { CheckCircle2, Target } from 'lucide-react';
 
 export default async function Page({
   params,
@@ -42,8 +43,14 @@ export default async function Page({
                 This area can show location, salary range, and full posting description.
               </div>
             </div>
-            <div className="rounded-lg border p-4 text-sm text-muted-foreground">
-              Candidate pipeline is not available yet.
+            <div className="rounded-lg border p-4 space-y-2">
+              <div className="text-sm font-medium flex items-center gap-2">
+                <Target className="h-4 w-4" />
+                Candidate pipeline
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Candidate pipeline is not available yet.
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -55,7 +62,14 @@ export default async function Page({
           <CardContent className="space-y-2">
             <Button className="w-full">Edit</Button>
             <Button variant="outline" className="w-full">Close posting</Button>
+            <Button variant="outline" className="w-full" asChild>
+              <Link href={`/employer/${employerID}/matches`}>Open matches</Link>
+            </Button>
             <Separator />
+            <div className="rounded-lg border p-3 text-sm text-muted-foreground flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" />
+              Keep role requirements aligned with this posting before publication.
+            </div>
             <div className="space-y-1">
               <div className="text-sm text-muted-foreground">Posting ID</div>
               <div className="font-mono text-sm">{postingID}</div>

@@ -14,6 +14,7 @@ import {
   UserProfile,
   UserProfileResponse,
   UserRecommendationsResponse,
+  Skill,
   UserSkill,
   UserSkillWithSkill,
 } from './types';
@@ -41,6 +42,12 @@ export const user = {
 
   getUserSkills: async (): Promise<UserSkillWithSkill[]> =>
     await http.get<UserSkillWithSkill[]>('/skills', {
+      auth: true,
+      cache: 'no-store',
+    }),
+
+  getUserSkillOptions: async (): Promise<Skill[]> =>
+    await http.get<Skill[]>('/skills/options', {
       auth: true,
       cache: 'no-store',
     }),

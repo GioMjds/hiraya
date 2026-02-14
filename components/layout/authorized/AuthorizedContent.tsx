@@ -4,9 +4,10 @@ import type { Route } from 'next';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Header, NavRail } from '@/components/layout';
-import type { NavItem, DynamicRouteParams } from '@/utils/sidebar';
+import type { NavItem, DynamicRouteParams, Roles } from '@/utils/sidebar';
 import { resolveDynamicHref } from '@/utils/sidebar';
 import { useNavRailStore } from '@/stores';
+import { ROLE_UI_CONFIG } from './role-ui-config';
 
 interface NavItemWithRoute extends Omit<NavItem, 'href' | 'children'> {
   href: Route;
@@ -21,11 +22,12 @@ export function AuthorizedContent({
 }: {
   navItems: NavItem[];
   children: React.ReactNode;
-  role: 'admin' | 'user' | 'employer'
+  role: Roles;
   params?: DynamicRouteParams;
 }) {
   const { isCollapsed } = useNavRailStore();
   const [mounted, setMounted] = useState<boolean>(false);
+  const roleConfig = ROLE_UI_CONFIG[role];
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setMounted(true));
@@ -37,7 +39,9 @@ export function AuthorizedContent({
   const mapNavItems = (items: NavItem[]): NavItemWithRoute[] => {
     return items.map((item) => ({
       ...item,
-      href: (item.href ? resolveDynamicHref(item.href, params ?? {}) : '') as Route,
+      href: (item.href
+        ? resolveDynamicHref(item.href, params ?? {})
+        : '') as Route,
       children: item.children ? mapNavItems(item.children) : undefined,
     }));
   };
@@ -51,15 +55,16 @@ export function AuthorizedContent({
       </header>
       <div className="flex flex-1 overflow-hidden">
         <aside className="border-r shrink-0">
-          <NavRail items={mappedItems} />
+          <NavRail items={mappedItems} role={role} />
         </aside>
         <main
           className={cn(
-            'flex-1 p-8 transition-all duration-300 overflow-y-auto',
+            'flex-1 transition-all duration-300 overflow-y-auto',
+            roleConfig.shellContainerClassName,
             active ? 'ml-0' : 'ml-0',
           )}
         >
-          {children}
+          <div className={roleConfig.shellInnerClassName}>{children}</div>
         </main>
       </div>
     </div>

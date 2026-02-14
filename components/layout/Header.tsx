@@ -8,15 +8,18 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import ThemeToggle from '@/components/shared/theme-switcher';
 import { useNavRailStore } from '@/stores';
+import type { Roles } from '@/utils/sidebar';
 import { AuthorizedProfile } from './authorized';
+import { ROLE_UI_CONFIG } from './authorized/role-ui-config';
 
 interface HeaderProps {
-  role: string;
+  role: Roles;
 }
 
 export function Header({ role }: HeaderProps) {
   const { isCollapsed, toggleCollapse } = useNavRailStore();
   const [mounted, setMounted] = useState<boolean>(false);
+  const roleConfig = ROLE_UI_CONFIG[role];
 
   useEffect(() => {
     const raf = requestAnimationFrame(() => setMounted(true));
@@ -46,9 +49,12 @@ export function Header({ role }: HeaderProps) {
           Hiraya
         </div>
         <Separator orientation="vertical" className="h-6 hidden md:block" />
-        <Badge variant="outline" className="capitalize">
+        <Badge variant="outline" className={roleConfig.roleBadgeClassName}>
           {role}
         </Badge>
+        <span className="hidden lg:inline text-sm text-muted-foreground">
+          {roleConfig.workspaceLabel}
+        </span>
       </div>
 
       <div className="flex-1 max-w-md mx-4 hidden sm:block">
@@ -56,7 +62,7 @@ export function Header({ role }: HeaderProps) {
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             type="search"
-            placeholder="Search everything..."
+            placeholder={roleConfig.searchPlaceholder}
             className="pl-9 h-9 w-full rounded-full bg-muted/50 focus-visible:bg-background"
           />
         </div>

@@ -35,7 +35,7 @@ export function Navbar() {
           <span className="text-xl font-bold tracking-tight">Hiraya</span>
         </Link>
 
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-2">
           {NAV_LINKS.map((link) => {
             const active = pathname.startsWith(link.href);
 
@@ -74,7 +74,11 @@ export function Navbar() {
             onClick={() => setMobileOpen((prev) => !prev)}
             aria-label="Toggle menu"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </nav>

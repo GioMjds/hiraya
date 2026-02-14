@@ -18,6 +18,11 @@ export default async function Page({
     queryFn: async () => await user.getUserSkills(),
   });
 
+  await queryClient.prefetchQuery({
+    queryKey: userSkillQueryKeys.options(),
+    queryFn: async () => await user.getUserSkillOptions(),
+  });
+
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
       <UserSkillsClient userId={userID} />

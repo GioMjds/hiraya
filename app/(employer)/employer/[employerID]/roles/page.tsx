@@ -22,7 +22,7 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" asChild>
-            <Link href={`/employer/${employerID}/dashboard`}>Back</Link>
+            <Link href={`/employer/${employerID}/dashboard`}>Back to dashboard</Link>
           </Button>
           <Button>
             <Plus className="mr-1 h-4 w-4" />
@@ -31,11 +31,11 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
         </div>
       </div>
 
-      <Card>
+      <Card className="border-border/80">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <CardTitle className="text-base">Role library</CardTitle>
-            <Briefcase className="h-5 w-5 text-muted-foreground" />
+            <Briefcase className="h-4 w-4 text-muted-foreground" />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -46,21 +46,24 @@ export default async function Page({ params }: PageProps<'/employer/[employerID]
           <Separator />
           <div className="grid gap-3">
             {roles.length === 0 ? (
-              <div className="rounded-lg border p-6 text-sm text-muted-foreground">
-                No roles available yet.
+              <div className="rounded-lg border border-border/80 p-6 text-sm text-muted-foreground">
+                No roles yet.
               </div>
             ) : (
               roles.map((role) => (
                 <div
                   key={role.id}
-                  className="rounded-lg border p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
+                  className="rounded-lg border border-border/80 p-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
                     <div className="font-medium">{role.title}</div>
                     <div className="text-xs text-muted-foreground">Role ID: {role.id}</div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Badge variant={role.status === 'PUBLISHED' ? 'secondary' : 'outline'}>
+                    <Badge
+                      variant={role.status === 'PUBLISHED' ? 'secondary' : 'outline'}
+                      className="uppercase"
+                    >
                       {role.status}
                     </Badge>
                     <Button variant="outline" size="sm" asChild>
